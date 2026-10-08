@@ -7,20 +7,21 @@
       name="description"
       content="Should you prepay your mortgage or invest? Compare both strategies with your own numbers."
     />
-    <title>Mortgage vs. Investment Simulator</title>
+    <title>Mortgage vs. Investment</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
+    <!-- All visible texts are filled in by src/main.ts in the chosen language (src/i18n.ts). -->
     <div class="layout">
       <aside class="sidebar">
-        <h1>Mortgage vs. Investment</h1>
-        <p class="lede">
-          <strong>Path A:</strong> invest all extra savings.<br />
-          <strong>Path B:</strong> prepay the mortgage with part of it.<br />
-          Both invest the freed-up installment once their mortgage is paid off.
-        </p>
-        <div class="segmented" id="currency" role="radiogroup" aria-label="Currency"></div>
+        <h1 id="title"></h1>
+        <p class="lede" id="lede"></p>
+        <div class="segmented" id="currency" role="radiogroup"></div>
         <div class="controls" id="controls"></div>
+        <div class="sidebar-footer">
+          <div class="segmented languages" id="language" role="radiogroup"></div>
+          <div class="credits" id="credits"></div>
+        </div>
       </aside>
 
       <main>
@@ -36,25 +37,13 @@
 
         <section class="panel table-panel">
           <div class="table-header">
-            <h2>Year by year</h2>
-            <div class="segmented" id="table-case" role="radiogroup" aria-label="Scenario shown in the table"></div>
+            <h2 id="table-title"></h2>
+            <div class="segmented" id="table-case" role="radiogroup"></div>
           </div>
           <div class="table-wrap">
             <table id="table">
               <thead>
-                <tr>
-                  <th>Year</th>
-                  <th>Extra savings / month</th>
-                  <th>Property value</th>
-                  <th>Net wealth A</th>
-                  <th>Net wealth B</th>
-                  <th>B − A</th>
-                  <th>Loan A</th>
-                  <th>Loan B</th>
-                  <th>Invested B (year)</th>
-                  <th>Investments A</th>
-                  <th>Investments B</th>
-                </tr>
+                <tr id="table-head"></tr>
               </thead>
               <tbody></tbody>
             </table>

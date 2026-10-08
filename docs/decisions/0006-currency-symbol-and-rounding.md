@@ -1,6 +1,6 @@
 # 0006 – Currency changes symbol and rounding, not amounts
 
-**Status:** accepted, 2026-10-08
+**Status:** accepted, 2026-10-08; number format superseded by 0013
 
 **Context:** Users want forint, euro or dollar. Converting amounts would need exchange rates that go
 stale.

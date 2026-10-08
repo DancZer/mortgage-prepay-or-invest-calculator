@@ -1,7 +1,8 @@
 Feature: Typing values into the inputs
   Every slider has an input field next to it. A typed value is applied when the user presses
-  Enter or leaves the field. A value above the slider's maximum is accepted, and the slider is
-  extended to that value + 10 %, rounded up to the slider's step, so the typed value never sits
+  Enter or leaves the field, written in the number format of the chosen language (these scenarios
+  use English; see 14_languages.feature for the others). A value above the slider's maximum is accepted, and the slider is
+  extended to that value + 10%, rounded up to the slider's step, so the typed value never sits
   at the very end of the slider (decision 0011).
 
   Background:
@@ -39,7 +40,7 @@ Feature: Typing values into the inputs
 
   Rule: A value above the slider's maximum extends the slider
 
-    Scenario Outline: The new maximum is the value + 10 %, rounded up to the slider's step
+    Scenario Outline: The new maximum is the value + 10%, rounded up to the slider's step
       When I type "<typed>" into the <parameter> field
       Then the typed value is accepted
       And the <parameter> is set to <typed>
@@ -82,7 +83,7 @@ Feature: Typing values into the inputs
 
   Rule: Values that cannot be used are rejected with a message and change nothing
     Below the slider minimum is not allowed. The upper limits keep the model meaningful:
-    100 % for percentages (the prepayment share cannot exceed the savings), 100 years,
+    100% for percentages (the prepayment share cannot exceed the savings), 100 years,
     and 1 000 000 000 000 for amounts.
 
     Scenario Outline: Rejected values
@@ -92,18 +93,18 @@ Feature: Typing values into the inputs
 
       Examples:
         | parameter          | typed             | message                         |
-        | loan amount        | 5 000 000         | Minimum is 10 000 000 Ft        |
-        | worst-case return  | -6                | Minimum is -5 %                 |
-        | prepayment share   | 120               | Maximum is 100 %                |
-        | mortgage rate      | 101               | Maximum is 100 %                |
+        | loan amount        | 5 000 000         | Minimum is Ft 10,000,000        |
+        | worst-case return  | -6                | Minimum is -5%                 |
+        | prepayment share   | 120               | Maximum is 100%                |
+        | mortgage rate      | 101               | Maximum is 100%                |
         | years              | 101               | Maximum is 100 years            |
-        | loan amount        | 2 000 000 000 000 | Maximum is 1 000 000 000 000 Ft |
+        | loan amount        | 2 000 000 000 000 | Maximum is Ft 1,000,000,000,000 |
         | loan amount        | abc               | Enter a number                  |
         | loan amount        |                   | Enter a number                  |
-        | loan amount        | 1,234,567         | Enter a number                  |
+        | loan amount        | 12.34.56          | Enter a number                  |
 
     Scenario: The message uses the chosen currency
       Given the parameters:
         | currency | EUR |
       When I type "5 000 000" into the loan amount field
-      Then the input is rejected with "Minimum is 10 000 000 €"
+      Then the input is rejected with "Minimum is €10,000,000"

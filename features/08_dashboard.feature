@@ -2,7 +2,7 @@ Feature: Dashboard – cards, verdict, chart and yearly table
   The results are shown as summary cards, a plain-language verdict, a line chart with a
   worst-to-best band per path, and a yearly table that can show either case.
 
-  The example below has no interest and no investment return, only a 2 % prepayment penalty.
+  The example below has no interest and no investment return, only a 2% prepayment penalty.
   Both paths pay in the same money, so the only difference is the penalty Path B pays:
   8 months × 1 000 = 8 000.
     Path A: pays 100 000 a month, mortgage-free in month 12.
@@ -15,8 +15,8 @@ Feature: Dashboard – cards, verdict, chart and yearly table
       | property value        | 1 200 000 |
       | monthly installment   | 100 000   |
       | monthly extra savings | 51 000    |
-      | prepayment share      | 100 %     |
-      | prepayment penalty    | 2 %       |
+      | prepayment share      | 100%     |
+      | prepayment penalty    | 2%       |
       | years                 | 2         |
 
   Rule: Summary cards show both final results in both cases, the break-even return and Path B's payoff date
@@ -30,9 +30,9 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | Path B mortgage-free    |
       And the final net wealth is:
         | path | worst case   | best case    |
-        | A    | 3 624 000 Ft | 3 624 000 Ft |
-        | B    | 3 616 000 Ft | 3 616 000 Ft |
-      And the "Break-even return" card shows "-3.96 %"
+        | A    | Ft 3,624,000 | Ft 3,624,000 |
+        | B    | Ft 3,616,000 | Ft 3,616,000 |
+      And the "Break-even return" card shows "-3.96%"
       And the "Break-even return" card notes:
         | Investing wins above it, prepaying below it |
       And the "Path B mortgage-free" card shows "Year 1, month 8"
@@ -41,20 +41,20 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | Path A: Year 1, month 12 |
       And the verdict is:
         """
-        Investing wins in both cases: by 8 000 Ft at 0.0 % a year and by 8 000 Ft at 0.0 % a year.
-        Investing comes out ahead only if your investments earn more than -3.96 % a year.
+        Investing wins in both cases: by Ft 8,000 at 0.0% a year and by Ft 8,000 at 0.0% a year.
+        Investing comes out ahead only if your investments earn more than -3.96% a year.
         """
 
     Scenario: Identical results and a missing payoff are stated plainly
       Given the parameters:
         | monthly installment | 50 000 |
-        | prepayment share    | 0 %    |
+        | prepayment share    | 0%    |
         | years               | 1      |
       When I run the simulation
       Then the final net wealth is:
         | path | worst case   | best case    |
-        | A    | 1 212 000 Ft | 1 212 000 Ft |
-        | B    | 1 212 000 Ft | 1 212 000 Ft |
+        | A    | Ft 1,212,000 | Ft 1,212,000 |
+        | B    | Ft 1,212,000 | Ft 1,212,000 |
       And the "Break-even return" card shows "—"
       And the "Break-even return" card notes:
         | Nothing is prepaid |
@@ -98,7 +98,7 @@ Feature: Dashboard – cards, verdict, chart and yearly table
     Scenario: No payoff marker when the mortgage is not paid off
       Given the parameters:
         | monthly installment | 10 000 |
-        | prepayment share    | 0 %    |
+        | prepayment share    | 0%    |
       When I run the simulation
       Then the chart has no payoff marker
 
@@ -112,10 +112,10 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | 2    | 51 000                | 1 200 000      | 3 624 000    | 3 616 000    | −8 000 | 0      | 0      | 1 812 000         | 2 424 000     | 2 416 000     | no          |
 
     Scenario: The table can show the best case
-      Best case: 51 000 invested at the start of each month, 1 % return a month rounded to whole
+      Best case: 51 000 invested at the start of each month, 1% return a month rounded to whole
       forints: 51 510, 103 535, 156 080, … 595 809, 653 277.
       Given the parameters:
-        | best-case return | 12 % |
+        | best-case return | 12% |
       When I run the simulation
       Then the yearly table is:
         | year | investments A |

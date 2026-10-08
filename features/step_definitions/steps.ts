@@ -2,17 +2,20 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Given, Then, When, type DataTable } from "@cucumber/cucumber";
 import type { MonthRow, SimResult } from "../../src/calc";
-import { formatMoney, isCurrencyCode } from "../../src/currency";
+import { isCurrencyCode } from "../../src/currency";
+import { STRINGS, type Language } from "../../src/i18n";
 import { applyInput, applyTypedValue, defaultInputs, initialMaxes, paramDef, PARAMS } from "../../src/params";
 import { breakEvenReturn, runScenarios, type Case } from "../../src/scenarios";
-import { loadInputs, saveInputs, STORAGE_KEY } from "../../src/storage";
+import { loadInputs, loadLanguage, saveInputs, saveLanguage, STORAGE_KEY } from "../../src/storage";
 import {
   chartSeries,
   describeBreakEven,
   describeElapsed,
   describeInputError,
   describePayoff,
+  credits,
   formatParam,
+  money,
   payoffMarker,
   summaryCards,
   verdict,
@@ -61,11 +64,11 @@ Then("the currency is {word}", function (this: SimWorld, currency: string) {
 });
 
 Then("the {string} slider shows {string}", function (this: SimWorld, name: string, label: string) {
-  assert.equal(normalize(formatParam(paramDef(paramKey(name)), this.inputs)), normalize(label));
+  assert.equal(normalize(formatParam(paramDef(paramKey(name)), this.inputs, this.lang)), normalize(label));
 });
 
 Then("the amount {string} is shown as {string}", function (this: SimWorld, amount: string, shown: string) {
-  assert.equal(normalize(formatMoney(parseNumber(amount), this.inputs.currency)), normalize(shown));
+  assert.equal(normalize(money(parseNumber(amount), this.inputs.currency, this.lang)), normalize(shown));
 });
 
 Then("the sliders are:", function (table: DataTable) {
@@ -86,11 +89,11 @@ Then("the sliders are:", function (table: DataTable) {
 
 Then("every default value lies within its range and on its slider's step grid", function () {
   for (const def of PARAMS) {
-    assert.ok(def.defaultValue >= def.min && def.defaultValue <= def.max, `${def.label}: default outside range`);
+    assert.ok(def.defaultValue >= def.min && def.defaultValue <= def.max, `${def.key}: default outside range`);
     const steps = (def.defaultValue - def.min) / def.step;
     assert.ok(
       Math.abs(steps - Math.round(steps)) < 1e-9,
-      `${def.label}: default ${def.defaultValue} is not on the step grid`,
+      `${def.key}: default ${def.defaultValue} is not on the step grid`,
     );
   }
 });
@@ -121,13 +124,13 @@ When("I open the app", function (this: SimWorld) {
 When(/^I type "(.*)" into the (.+) field$/, function (this: SimWorld, text: string, name: string) {
   const key = paramKey(name);
   this.inputsBeforeTyping = this.inputs;
-  const result = applyTypedValue(this.inputs, this.maxes, key, text);
+  const result = applyTypedValue(this.inputs, this.maxes, key, text, this.lang);
   if (result.ok) {
     this.setInputs(result.inputs);
     this.maxes = result.maxes;
     this.lastError = null;
   } else {
-    this.lastError = describeInputError(paramDef(key), result.error, this.inputs.currency);
+    this.lastError = describeInputError(paramDef(key), result.error, this.inputs.currency, this.lang);
   }
 });
 
@@ -263,7 +266,7 @@ Then("the remaining loans are never negative", function (this: SimWorld) {
 });
 
 Then(
-  "the difference between the paths is the same in every month as with {int} % property growth",
+  "the difference between the paths is the same in every month as with {int}% property growth",
   function (this: SimWorld, growth: number) {
     const other = runScenarios({ ...this.inputs, appr: growth });
     for (const c of ["worst", "best"] as Case[]) {
@@ -286,18 +289,18 @@ Then("the loan and the payoff months are the same in the worst and the best case
 });
 
 Then("a warning is shown that the installment does not cover the monthly interest", function (this: SimWorld) {
-  const warning = warningMessage(this.inputs);
+  const warning = warningMessage(this.inputs, this.lang);
   assert.ok(warning?.includes("doesn't cover"), `expected a warning, got ${warning}`);
 });
 
 Then("no warning is shown", function (this: SimWorld) {
-  assert.equal(warningMessage(this.inputs), null);
+  assert.equal(warningMessage(this.inputs, this.lang), null);
 });
 
 // ---------- Break-even and verdict ----------
 
 Then("the break-even return is {string}", function (this: SimWorld, expected: string) {
-  assert.equal(normalize(describeBreakEven(this.breakEven)), normalize(expected));
+  assert.equal(normalize(describeBreakEven(this.breakEven, this.lang)), normalize(expected));
 });
 
 Then("the break-even return is lower than without a penalty", function (this: SimWorld) {
@@ -307,7 +310,7 @@ Then("the break-even return is lower than without a penalty", function (this: Si
   assert.ok(withPenalty.rate < without.rate, `${withPenalty.rate} % is not lower than ${without.rate} %`);
 });
 
-Then("with that return both paths end within {float} % of each other", function (this: SimWorld, tolerancePct: number) {
+Then("with that return both paths end within {float}% of each other", function (this: SimWorld, tolerancePct: number) {
   const be = this.breakEven;
   assert.ok(be.kind === "at", "no break-even rate");
   const res = runScenarios({ ...this.inputs, invWorst: be.rate, invBest: be.rate }).worst;
@@ -316,17 +319,17 @@ Then("with that return both paths end within {float} % of each other", function 
 });
 
 Then("the verdict is:", function (this: SimWorld, text: string) {
-  assert.equal(ungroup(verdict(this.inputs, this.scenarios, this.breakEven)), ungroup(text));
+  assert.equal(ungroup(verdict(this.inputs, this.scenarios, this.breakEven, this.lang)), ungroup(text));
 });
 
 Then("the verdict starts with {string}", function (this: SimWorld, start: string) {
-  const actual = ungroup(verdict(this.inputs, this.scenarios, this.breakEven));
+  const actual = ungroup(verdict(this.inputs, this.scenarios, this.breakEven, this.lang));
   assert.ok(actual.startsWith(ungroup(start)), `verdict: ${actual}`);
 });
 
 // ---------- Dashboard ----------
 
-const cards = (w: SimWorld) => summaryCards(w.inputs, w.scenarios, w.breakEven);
+const cards = (w: SimWorld) => summaryCards(w.inputs, w.scenarios, w.breakEven, w.lang);
 
 Then("the final net wealth is:", function (this: SimWorld, table: DataTable) {
   for (const row of table.hashes()) {
@@ -361,9 +364,9 @@ Then("the {string} card notes:", function (this: SimWorld, title: string, table:
 
 Then(
   "a payoff in month {int} is shown as {string} and {string}",
-  function (month: number, date: string, elapsed: string) {
-    assert.equal(describePayoff(month), date);
-    assert.equal(describeElapsed(month), elapsed);
+  function (this: SimWorld, month: number, date: string, elapsed: string) {
+    assert.equal(describePayoff(month, this.lang), date);
+    assert.equal(describeElapsed(month, this.lang), elapsed);
   },
 );
 
@@ -390,12 +393,12 @@ function cssColour(variable: string): string {
 }
 
 Then("the chart series are:", function (this: SimWorld, table: DataTable) {
-  const series = chartSeries(this.scenarios);
+  const series = chartSeries(this.scenarios, this.lang);
   const expected = table.hashes();
   assert.equal(series.length, expected.length, "number of series");
   expected.forEach((row, i) => {
     const s = series[i];
-    assert.equal(s.label, row.series, `series ${i + 1}`);
+    assert.equal(s.text, row.series, `series ${i + 1}`);
     assert.equal(colourName(cssColour(s.colorVar)), row.colour, `${row.series} colour`);
     assert.equal(s.dashed ? "dashed" : "solid", row.line, `${row.series} line style`);
     assert.equal(s.fillToPrevious ? "yes" : "no", row["shaded band"], `${row.series} band`);
@@ -406,11 +409,11 @@ Then(
   "every chart series has one point per month including the start, with x in years elapsed",
   function (this: SimWorld) {
     const months = this.inputs.years * 12;
-    for (const s of chartSeries(this.scenarios)) {
-      assert.equal(s.points.length, months + 1, `${s.label} point count`);
+    for (const s of chartSeries(this.scenarios, this.lang)) {
+      assert.equal(s.points.length, months + 1, `${s.text} point count`);
       s.points.forEach((p, m) => {
-        assert.ok(Math.abs(p.x - m / 12) < 1e-9, `${s.label} point ${m} x`);
-        assert.equal(p.y, this.scenarios[s.scenario].rows[m][s.key], `${s.label} point ${m} y`);
+        assert.ok(Math.abs(p.x - m / 12) < 1e-9, `${s.text} point ${m} x`);
+        assert.equal(p.y, this.scenarios[s.scenario].rows[m][s.key], `${s.text} point ${m} y`);
       });
     }
   },
@@ -419,7 +422,7 @@ Then(
 Then(
   "the chart marks Path B's payoff after {int} months with the label {string}",
   function (this: SimWorld, months: number, label: string) {
-    const marker = payoffMarker(this.result);
+    const marker = payoffMarker(this.result, this.lang);
     assert.ok(marker, "no payoff marker");
     assert.ok(Math.abs(marker.x - months / 12) < 1e-9, `marker at ${marker.x} years`);
     assert.equal(marker.label, label);
@@ -427,7 +430,7 @@ Then(
 );
 
 Then("the chart has no payoff marker", function (this: SimWorld) {
-  assert.equal(payoffMarker(this.result), null);
+  assert.equal(payoffMarker(this.result, this.lang), null);
 });
 
 // ---------- Yearly table ----------
@@ -478,4 +481,78 @@ Then("the yearly table is:", function (this: SimWorld, table: DataTable) {
 
 Then("the best-case yearly table is:", function (this: SimWorld, table: DataTable) {
   assertYearlyTable(this.scenarios.best, table);
+});
+
+// ---------- Languages and credits ----------
+
+const LANGUAGE_NAMES: Record<string, Language> = { hungarian: "hu", slovak: "sk", german: "de", english: "en" };
+
+function languageCode(name: string): Language {
+  const code = LANGUAGE_NAMES[name.trim().toLowerCase()];
+  assert.ok(code, `Unknown language "${name}". Known: ${Object.keys(LANGUAGE_NAMES).join(", ")}`);
+  return code;
+}
+
+Given("the language is {word}", function (this: SimWorld, name: string) {
+  this.lang = languageCode(name);
+});
+
+Given("I chose {word} before", function (this: SimWorld, name: string) {
+  saveLanguage(this.store, languageCode(name));
+});
+
+Given("the app was built on {string}", function (this: SimWorld, date: string) {
+  this.buildDate = date;
+});
+
+When("I open the app in a browser set to {string}", function (this: SimWorld, languages: string) {
+  const list = languages
+    .split(",")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  this.lang = loadLanguage(this.store, list);
+});
+
+Then("the app is shown in {word}", function (this: SimWorld, name: string) {
+  assert.equal(this.lang, languageCode(name));
+});
+
+Then("the title is {string}", function (this: SimWorld, title: string) {
+  assert.equal(STRINGS[this.lang].title, title);
+});
+
+/** Lists every text path of a strings object, e.g. "cards.netA" or "table.headers.3". */
+function textPaths(value: unknown, prefix = ""): string[] {
+  if (value && typeof value === "object") {
+    return Object.entries(value).flatMap(([k, v]) => textPaths(v, prefix ? `${prefix}.${k}` : k));
+  }
+  return [prefix];
+}
+
+Then("every language has the same texts as English, none of them empty", function () {
+  const english = textPaths(STRINGS.en).sort();
+  for (const code of Object.keys(STRINGS) as Language[]) {
+    assert.deepEqual(textPaths(STRINGS[code]).sort(), english, `${code}: texts differ from English`);
+    const check = (value: unknown, path: string) => {
+      if (typeof value === "string" && !path.includes(".separators."))
+        assert.ok(value.trim() !== "", `${code}: ${path} is empty`);
+    };
+    const walk = (value: unknown, path: string) =>
+      value && typeof value === "object"
+        ? Object.entries(value).forEach(([k, v]) => walk(v, `${path}.${k}`))
+        : check(value, path);
+    walk(STRINGS[code], code);
+    assert.deepEqual(Object.keys(STRINGS[code].params).sort(), PARAMS.map((p) => p.key).sort(), `${code}: labels`);
+  }
+});
+
+Then("the credits are:", function (this: SimWorld, table: DataTable) {
+  const c = credits(this.lang, this.buildDate);
+  const expected = table.rowsHash();
+  assert.equal(c.createdBy, expected["created by"], "created by");
+  assert.equal(c.copyright, expected["copyright"], "copyright");
+  assert.equal(normalize(c.version), normalize(expected["version"]), "version");
+  assert.equal(c.authorUrl, expected["author link"], "author link");
+  assert.equal(c.license, expected["license"], "license");
+  assert.equal(c.licenseUrl, expected["license link"], "license link");
 });

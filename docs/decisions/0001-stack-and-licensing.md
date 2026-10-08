@@ -1,6 +1,6 @@
 # 0001 – Static TypeScript app with permissively licensed dependencies only
 
-**Status:** accepted, 2026-10-08
+**Status:** accepted, 2026-10-08; licensing of the project itself superseded by 0012
 
 **Context:** The app will be sold later, possibly closed-source. Copyleft licenses (GPL, AGPL, LGPL)
 could force the source to be published.

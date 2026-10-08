@@ -1,71 +1,82 @@
+import { AUTHOR, AUTHOR_URL, COPYRIGHT_YEAR, LICENSE_URL } from "./about";
 import { elapsedTime, installmentTooLow, toYearMonth, type MonthRow, type SimResult } from "./calc";
-import { CURRENCIES, formatMoney, LOCALE, type CurrencyCode } from "./currency";
+import { formatMoney, type CurrencyCode } from "./currency";
+import { STRINGS, type Language } from "./i18n";
 import type { ParamDef, TypedError } from "./params";
 import { BREAK_EVEN_MAX, BREAK_EVEN_MIN, type AppInputs, type BreakEven, type Case, type Scenarios } from "./scenarios";
 
-export const fmtMillions = (v: number) => `${(v / 1e6).toLocaleString(LOCALE, { maximumFractionDigits: 1 })} M`;
-export const fmtPct = (v: number, decimals = 1) => `${v.toFixed(decimals)} %`;
+const locale = (lang: Language) => STRINGS[lang].locale;
 
-/** A percentage with at least `minDecimals` and at most 2 decimals: 6.18 → "6.18", 3 → "3.0" (min 1). */
-function pctNumber(v: number, minDecimals: number): string {
-  let s = v.toFixed(2);
-  while (s.endsWith("0") && s.length - s.indexOf(".") - 1 > minDecimals) s = s.slice(0, -1);
-  return s.endsWith(".") ? s.slice(0, -1) : s;
+export const money = (v: number, currency: CurrencyCode, lang: Language) => formatMoney(v, currency, locale(lang));
+
+export const fmtMillions = (v: number, lang: Language) =>
+  `${(v / 1e6).toLocaleString(locale(lang), { maximumFractionDigits: 1 })} M`;
+
+/** A percentage in the language's format, e.g. "6.18%" (en), "6,18 %" (de), "6,18%" (hu). */
+export function fmtPct(v: number, lang: Language, minDecimals = 1, maxDecimals = minDecimals): string {
+  return new Intl.NumberFormat(locale(lang), {
+    style: "percent",
+    minimumFractionDigits: minDecimals,
+    maximumFractionDigits: Math.max(minDecimals, maxDecimals),
+  }).format(v / 100);
 }
 
-/** Slider value as text, e.g. "45 000 000 Ft", "6.18 %" or "50 % (75 000 Ft)"; also read out by screen readers. */
-export function formatParam(def: ParamDef, inputs: AppInputs): string {
+/** Slider value as text, e.g. "Ft 45,000,000", "6.18%" or "50% (Ft 75,000)"; read out by screen readers. */
+export function formatParam(def: ParamDef, inputs: AppInputs, lang: Language): string {
   const value = inputs[def.key];
   if (def.key === "prepayPct")
-    return `${pctNumber(value, 0)} % (${formatMoney((inputs.extra * value) / 100, inputs.currency)})`;
-  if (def.unit === "money") return formatMoney(value, inputs.currency);
-  if (def.unit === "percent") return `${pctNumber(value, def.decimals ?? 1)} %`;
+    return `${fmtPct(value, lang, 0, 2)} (${money((inputs.extra * value) / 100, inputs.currency, lang)})`;
+  if (def.unit === "money") return money(value, inputs.currency, lang);
+  if (def.unit === "percent") return fmtPct(value, lang, def.decimals ?? 1, 2);
+  return `${value} ${STRINGS[lang].yearsUnit}`;
+}
+
+/** Text shown in an input field, without the unit: "45 000 000" / "45.000.000" / "45,000,000", "6,18". */
+export function formatInputValue(def: ParamDef, value: number, lang: Language): string {
+  if (def.unit === "percent") return value.toLocaleString(locale(lang), { maximumFractionDigits: 2 });
+  if (def.unit === "money") return value.toLocaleString(locale(lang), { maximumFractionDigits: 0 });
   return String(value);
 }
 
-/** Text shown in an input field, without the unit: "45 000 000", "6.18", "50". */
-export function formatInputValue(def: ParamDef, value: number): string {
-  if (def.unit === "money") return value.toLocaleString(LOCALE, { maximumFractionDigits: 0 });
-  if (def.unit === "percent") return pctNumber(value, 0);
-  return String(value);
-}
-
-/** Unit shown after an input field: "Ft" / "€" / "$", "%" or "years". */
-export function unitLabel(def: ParamDef, currency: CurrencyCode): string {
-  if (def.unit === "money") return CURRENCIES[currency].label;
+/** Unit shown after an input field: "Ft" / "€" / "$", "%" or the word for years. */
+export function unitLabel(def: ParamDef, currency: CurrencyCode, lang: Language): string {
+  if (def.unit === "money") return { HUF: "Ft", EUR: "€", USD: "$" }[currency];
   if (def.unit === "percent") return "%";
-  return "years";
+  return STRINGS[lang].yearsUnit;
 }
 
 /** Extra line under a field; the prepayment share shows the resulting monthly amount. */
-export function inputHint(def: ParamDef, inputs: AppInputs): string {
+export function inputHint(def: ParamDef, inputs: AppInputs, lang: Language): string {
   return def.key === "prepayPct"
-    ? `= ${formatMoney((inputs.extra * inputs.prepayPct) / 100, inputs.currency)} a month in year 1`
+    ? STRINGS[lang].prepayHint(money((inputs.extra * inputs.prepayPct) / 100, inputs.currency, lang))
     : "";
 }
 
 /** Message for a typed value that cannot be used. */
-export function describeInputError(def: ParamDef, error: TypedError, currency: CurrencyCode): string {
-  if (error.kind === "notNumber") return "Enter a number";
-  const limit = `${formatInputValue(def, error.limit)} ${unitLabel(def, currency)}`;
-  return error.kind === "belowMin" ? `Minimum is ${limit}` : `Maximum is ${limit}`;
+export function describeInputError(def: ParamDef, error: TypedError, currency: CurrencyCode, lang: Language): string {
+  const t = STRINGS[lang].errors;
+  if (error.kind === "notNumber") return t.notNumber;
+  const limit =
+    def.unit === "money"
+      ? money(error.limit, currency, lang)
+      : def.unit === "percent"
+        ? fmtPct(error.limit, lang, 0, 2)
+        : `${error.limit} ${STRINGS[lang].yearsUnit}`;
+  return error.kind === "belowMin" ? t.min(limit) : t.max(limit);
 }
 
-/** "Year 11, month 10" (1-based) or "Not within horizon". */
-export function describePayoff(month: number | null): string {
-  if (month === null) return "Not within horizon";
+/** "Year 11, month 10" (1-based, in the chosen language) or "Not within horizon". */
+export function describePayoff(month: number | null, lang: Language): string {
+  if (month === null) return STRINGS[lang].notWithinHorizon;
   const ym = toYearMonth(month);
-  return `Year ${ym.year}, month ${ym.month}`;
+  return STRINGS[lang].payoffDate(ym.year, ym.month);
 }
 
-/** "after 10 years 10 months"; empty when there is no payoff. */
-export function describeElapsed(month: number | null): string {
+/** "after 10 years 10 months" in the chosen language; empty when there is no payoff. */
+export function describeElapsed(month: number | null, lang: Language): string {
   if (month === null) return "";
   const { years, months } = elapsedTime(month);
-  const parts = [];
-  if (years > 0) parts.push(`${years} ${years === 1 ? "year" : "years"}`);
-  if (months > 0) parts.push(`${months} ${months === 1 ? "month" : "months"}`);
-  return `after ${parts.join(" ")}`;
+  return STRINGS[lang].elapsed(years, months);
 }
 
 const final = (res: SimResult) => res.rows[res.rows.length - 1];
@@ -82,82 +93,77 @@ export interface Card {
   tone?: "a" | "b";
 }
 
-export function describeBreakEven(be: BreakEven): string {
+export function describeBreakEven(be: BreakEven, lang: Language): string {
+  const t = STRINGS[lang].cards;
   switch (be.kind) {
     case "identical":
       return "—";
     case "at":
-      return fmtPct(be.rate, 2);
+      return fmtPct(be.rate, lang, 2);
     case "investAlways":
-      return `Below ${fmtPct(BREAK_EVEN_MIN, 0)}`;
+      return t.below(fmtPct(BREAK_EVEN_MIN, lang, 0));
     case "prepayAlways":
-      return `Above ${fmtPct(BREAK_EVEN_MAX, 0)}`;
+      return t.above(fmtPct(BREAK_EVEN_MAX, lang, 0));
   }
 }
 
-export function summaryCards(a: AppInputs, sc: Scenarios, be: BreakEven): Card[] {
-  const money = (v: number) => formatMoney(v, a.currency);
+export function summaryCards(a: AppInputs, sc: Scenarios, be: BreakEven, lang: Language): Card[] {
+  const t = STRINGS[lang].cards;
   const caseLines = (key: "netA" | "netB") => [
-    { label: `Worst case (${fmtPct(a.invWorst)})`, value: money(final(sc.worst)[key]) },
-    { label: `Best case (${fmtPct(a.invBest)})`, value: money(final(sc.best)[key]) },
+    { label: t.worstCase(fmtPct(a.invWorst, lang)), value: money(final(sc.worst)[key], a.currency, lang) },
+    { label: t.bestCase(fmtPct(a.invBest, lang)), value: money(final(sc.best)[key], a.currency, lang) },
   ];
   // The loan does not depend on the investment return, so either scenario gives the payoff dates.
   const { payoffMonthA, payoffMonthB } = sc.worst;
   return [
-    { title: "Path A final net wealth", lines: caseLines("netA"), notes: [], tone: "a" },
-    { title: "Path B final net wealth", lines: caseLines("netB"), notes: [], tone: "b" },
+    { title: t.netA, lines: caseLines("netA"), notes: [], tone: "a" },
+    { title: t.netB, lines: caseLines("netB"), notes: [], tone: "b" },
     {
-      title: "Break-even return",
-      lines: [{ label: "", value: describeBreakEven(be) }],
-      notes: [be.kind === "identical" ? "Nothing is prepaid" : "Investing wins above it, prepaying below it"],
+      title: t.breakEven,
+      lines: [{ label: "", value: describeBreakEven(be, lang) }],
+      notes: [be.kind === "identical" ? t.nothingPrepaid : t.breakEvenNote],
     },
     {
-      title: "Path B mortgage-free",
-      lines: [{ label: "", value: describePayoff(payoffMonthB) }],
-      notes: [describeElapsed(payoffMonthB), `Path A: ${describePayoff(payoffMonthA)}`].filter(Boolean),
+      title: t.mortgageFree,
+      lines: [{ label: "", value: describePayoff(payoffMonthB, lang) }],
+      notes: [describeElapsed(payoffMonthB, lang), t.pathAPayoff(describePayoff(payoffMonthA, lang))].filter(Boolean),
     },
   ];
 }
 
 /** A plain-language summary of who wins, in both cases, and the break-even return. */
-export function verdict(a: AppInputs, sc: Scenarios, be: BreakEven): string {
-  if (be.kind === "identical") return "You prepay nothing, so both strategies give the same result.";
-  const money = (v: number) => formatMoney(v, a.currency);
+export function verdict(a: AppInputs, sc: Scenarios, be: BreakEven, lang: Language): string {
+  const t = STRINGS[lang].verdict;
+  if (be.kind === "identical") return t.identical;
+  const amount = (v: number) => money(Math.abs(v), a.currency, lang);
   const advantage = (c: Case) => final(sc[c]).netA - final(sc[c]).netB;
   const winner = (d: number) => (d >= 1 ? "A" : d <= -1 ? "B" : "tie");
   const dw = advantage("worst");
   const db = advantage("best");
-  const at = (rate: number) => `at ${fmtPct(rate)} a year`;
+  const rw = fmtPct(a.invWorst, lang);
+  const rb = fmtPct(a.invBest, lang);
 
+  const ww = winner(dw);
+  const wb = winner(db);
   let first: string;
-  if (winner(dw) === winner(db)) {
-    const who = winner(dw);
-    first =
-      who === "tie"
-        ? "Both strategies give the same result in both cases."
-        : `${who === "A" ? "Investing" : "Prepaying"} wins in both cases: by ${money(Math.abs(dw))} ${at(a.invWorst)} and by ${money(Math.abs(db))} ${at(a.invBest)}.`;
-  } else {
-    const part = (d: number, rate: number) =>
-      winner(d) === "tie"
-        ? `${at(rate)} both give the same result`
-        : `${at(rate)} ${winner(d) === "A" ? "investing" : "prepaying"} wins by ${money(Math.abs(d))}`;
-    first = `It depends on your returns: ${part(dw, a.invWorst)}, ${part(db, a.invBest)}.`;
-  }
+  if (ww === wb) first = ww === "tie" ? t.bothTie : t.both(ww, amount(dw), rw, amount(db), rb);
+  else first = t.depends(t.part(rw, ww, amount(dw)), t.part(rb, wb, amount(db)));
 
-  const range = `from ${fmtPct(BREAK_EVEN_MIN, 0)} to ${fmtPct(BREAK_EVEN_MAX, 0)} a year`;
+  const min = fmtPct(BREAK_EVEN_MIN, lang, 0);
+  const max = fmtPct(BREAK_EVEN_MAX, lang, 0);
   const second =
     be.kind === "at"
-      ? `Investing comes out ahead only if your investments earn more than ${fmtPct(be.rate, 2)} a year.`
+      ? t.breakEvenAt(fmtPct(be.rate, lang, 2))
       : be.kind === "investAlways"
-        ? `Investing comes out ahead at any return ${range}.`
-        : `Prepaying comes out ahead at any return ${range}.`;
+        ? t.investAlways(min, max)
+        : t.prepayAlways(min, max);
   return `${first} ${second}`;
 }
 
 export interface SeriesDef {
   key: "netA" | "netB" | "loanB";
   scenario: Case;
-  label: string;
+  label: keyof (typeof STRINGS)["en"]["chart"];
   /** CSS custom property holding the series colour. */
   colorVar: string;
   dashed: boolean;
@@ -166,64 +172,36 @@ export interface SeriesDef {
 }
 
 export const SERIES: SeriesDef[] = [
-  {
-    key: "netA",
-    scenario: "worst",
-    label: "Path A – worst case",
-    colorVar: "--series-a",
-    dashed: false,
-    fillToPrevious: false,
-  },
-  {
-    key: "netA",
-    scenario: "best",
-    label: "Path A – best case",
-    colorVar: "--series-a",
-    dashed: false,
-    fillToPrevious: true,
-  },
-  {
-    key: "netB",
-    scenario: "worst",
-    label: "Path B – worst case",
-    colorVar: "--series-b",
-    dashed: false,
-    fillToPrevious: false,
-  },
-  {
-    key: "netB",
-    scenario: "best",
-    label: "Path B – best case",
-    colorVar: "--series-b",
-    dashed: false,
-    fillToPrevious: true,
-  },
-  {
-    key: "loanB",
-    scenario: "worst",
-    label: "Path B remaining loan",
-    colorVar: "--series-loan",
-    dashed: true,
-    fillToPrevious: false,
-  },
+  { key: "netA", scenario: "worst", label: "aWorst", colorVar: "--series-a", dashed: false, fillToPrevious: false },
+  { key: "netA", scenario: "best", label: "aBest", colorVar: "--series-a", dashed: false, fillToPrevious: true },
+  { key: "netB", scenario: "worst", label: "bWorst", colorVar: "--series-b", dashed: false, fillToPrevious: false },
+  { key: "netB", scenario: "best", label: "bBest", colorVar: "--series-b", dashed: false, fillToPrevious: true },
+  { key: "loanB", scenario: "worst", label: "loanB", colorVar: "--series-loan", dashed: true, fillToPrevious: false },
 ];
 
+export function seriesLabel(s: SeriesDef, lang: Language): string {
+  return STRINGS[lang].chart[s.label] as string;
+}
+
 export interface ChartSeries extends SeriesDef {
+  /** Translated legend label. */
+  text: string;
   /** x = years elapsed, one point per month including the start. */
   points: { x: number; y: number }[];
 }
 
-export function chartSeries(sc: Scenarios): ChartSeries[] {
+export function chartSeries(sc: Scenarios, lang: Language): ChartSeries[] {
   return SERIES.map((s) => ({
     ...s,
+    text: seriesLabel(s, lang),
     points: sc[s.scenario].rows.map((r: MonthRow) => ({ x: r.month / 12, y: r[s.key] })),
   }));
 }
 
 /** Vertical marker where Path B's mortgage reaches zero (x in years elapsed). */
-export function payoffMarker(res: SimResult): { x: number; label: string } | null {
+export function payoffMarker(res: SimResult, lang: Language): { x: number; label: string } | null {
   if (res.payoffMonthB === null) return null;
-  return { x: res.payoffMonthB / 12, label: `B mortgage-free: ${describePayoff(res.payoffMonthB)}` };
+  return { x: res.payoffMonthB / 12, label: STRINGS[lang].chart.marker(describePayoff(res.payoffMonthB, lang)) };
 }
 
 export interface TableRow {
@@ -265,16 +243,41 @@ export function yearlyTable(res: SimResult): TableRow[] {
     });
 }
 
-export function warningMessage(a: AppInputs): string | null {
-  return installmentTooLow(a)
-    ? "The monthly installment doesn't cover the first month's interest, so the loan never shrinks. Raise the installment or lower the loan amount or interest rate."
-    : null;
+export function warningMessage(a: AppInputs, lang: Language): string | null {
+  return installmentTooLow(a) ? STRINGS[lang].warning : null;
 }
 
-export const DISCLAIMER =
-  "This calculator is for illustration and education only. It is not financial, investment, tax or legal advice. " +
-  "Results depend entirely on the assumptions you enter; real returns, interest rates, fees and taxes will differ. " +
-  "Consult a qualified adviser before making financial decisions.";
+/** Formats an ISO date (YYYY-MM-DD) in the language, e.g. "8 October 2026" or "2026. október 8.". */
+export function formatDate(iso: string, lang: Language): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale(lang), {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
 
-export const PRIVACY_NOTE =
-  "Your inputs are saved only in this browser so they are still here next time. Nothing is sent to a server.";
+export interface Credits {
+  createdBy: string;
+  copyright: string;
+  version: string;
+  authorUrl: string;
+  authorLinkText: string;
+  license: string;
+  licenseUrl: string;
+}
+
+/** The credits shown at the bottom of the input panel. `buildDate` is an ISO date (YYYY-MM-DD). */
+export function credits(lang: Language, buildDate: string): Credits {
+  const t = STRINGS[lang].credits;
+  return {
+    createdBy: t.createdBy(AUTHOR),
+    copyright: `© ${COPYRIGHT_YEAR} ${AUTHOR}`,
+    version: t.version(formatDate(buildDate, lang)),
+    authorUrl: AUTHOR_URL,
+    authorLinkText: AUTHOR_URL.replace(/^https:\/\//, ""),
+    license: t.license,
+    licenseUrl: LICENSE_URL,
+  };
+}

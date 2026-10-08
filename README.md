@@ -10,6 +10,8 @@ Results — net wealth (property + investments − loan) — are shown for a wor
 return, together with the **break-even return** above which investing wins, a plain-language verdict, a chart
 and a year-by-year table. Amounts can be shown in forint, euro or dollar. Inputs are remembered in the browser.
 
+Available in **Hungarian, Slovak, German and English** — numbers and dates follow the chosen language.
+
 Built with TypeScript, [Vite](https://vite.dev) and [Chart.js](https://www.chartjs.org).
 
 ## Getting started
@@ -45,10 +47,15 @@ Netlify builds every push to GitHub using [`netlify.toml`](netlify.toml): it run
 publishes `dist/`. GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the same checks on
 pushes and pull requests.
 
-## Licensing
+## Contributing
 
-This project is proprietary — see [LICENSE](LICENSE). Dependencies are restricted to licenses that allow
-closed-source commercial use; see [decision 0001](docs/decisions/0001-stack-and-licensing.md). When distributing,
-include `THIRD_PARTY_NOTICES.md`.
+Issues and pull requests are welcome. Please describe new behaviour as a scenario in `features/` first, add any
+new text in all four languages in `src/i18n.ts`, and run `npm run check` before opening a pull request.
+
+## License
+
+[MIT](LICENSE) © 2026 [László Tánczos](https://github.com/DancZer). Dependencies are restricted to permissive
+licenses ([decision 0001](docs/decisions/0001-stack-and-licensing.md)); `THIRD_PARTY_NOTICES.md` lists the ones
+shipped with the app.
 
 The app is for illustration and education only and is not financial advice.

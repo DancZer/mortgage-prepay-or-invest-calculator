@@ -12,8 +12,8 @@ Feature: Annual growth of savings (inflation)
       | loan amount           | 100 000 000 |
       | monthly installment   | 100 000     |
       | monthly extra savings | 100 000     |
-      | prepayment share      | 60 %        |
-      | annual savings growth | 10 %        |
+      | prepayment share      | 60%        |
+      | annual savings growth | 10%        |
       | years                 | 15          |
 
   Scenario: Savings and prepayment grow once a year, on the anniversary
@@ -29,16 +29,16 @@ Feature: Annual growth of savings (inflation)
 
   Scenario: Without growth the savings stay flat for the whole horizon
     Given the parameters:
-      | annual savings growth | 0 % |
+      | annual savings growth | 0% |
     When I run the simulation
     Then the monthly results are:
       | month | extra savings | prepayment | invested B |
       | 1     | 100 000       | 60 000     | 40 000     |
       | 180   | 100 000       | 60 000     | 40 000     |
 
-  Scenario: A prepayment share of 100 % prepays all savings, also after growth
+  Scenario: A prepayment share of 100% prepays all savings, also after growth
     Given the parameters:
-      | prepayment share | 100 % |
+      | prepayment share | 100% |
     When I run the simulation
     Then the monthly results are:
       | month | extra savings | prepayment | invested B |

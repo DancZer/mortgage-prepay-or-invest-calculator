@@ -1,4 +1,5 @@
 import { DEFAULT_CURRENCY } from "./currency";
+import { parseLocalizedNumber, type Language } from "./i18n";
 import type { AppInputs } from "./scenarios";
 
 export type NumericKey = Exclude<keyof AppInputs, "currency">;
@@ -6,7 +7,6 @@ export type ParamUnit = "money" | "percent" | "years";
 
 export interface ParamDef {
   key: NumericKey;
-  label: string;
   min: number;
   max: number;
   step: number;
@@ -17,13 +17,12 @@ export interface ParamDef {
 }
 
 /**
- * Slider definitions. Reasons for values that differ from the original spec are in docs/decisions/.
+ * Slider definitions (labels are translated in i18n.ts). Reasons for values that differ from the original spec are in docs/decisions/.
  * Money amounts are the same numbers in every currency (only the symbol changes).
  */
 export const PARAMS: ParamDef[] = [
   {
     key: "property",
-    label: "Property value",
     min: 10_000_000,
     max: 200_000_000,
     step: 1_000_000,
@@ -32,7 +31,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "appr",
-    label: "Property growth / year",
     min: 0,
     max: 10,
     step: 0.5,
@@ -42,7 +40,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "loan",
-    label: "Loan amount",
     min: 10_000_000,
     max: 100_000_000,
     step: 1_000_000,
@@ -51,7 +48,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "installment",
-    label: "Monthly installment",
     min: 100_000,
     max: 600_000,
     step: 10_000,
@@ -60,7 +56,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "extra",
-    label: "Monthly extra savings",
     min: 20_000,
     max: 500_000,
     step: 10_000,
@@ -69,7 +64,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "prepayPct",
-    label: "…of which prepayment (B)",
     min: 0,
     max: 100,
     step: 5,
@@ -79,7 +73,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "inf",
-    label: "Savings growth / inflation",
     min: 0,
     max: 15,
     step: 0.5,
@@ -89,7 +82,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "invWorst",
-    label: "Return – worst case",
     min: -5,
     max: 20,
     step: 0.1,
@@ -99,7 +91,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "invBest",
-    label: "Return – best case",
     min: -5,
     max: 20,
     step: 0.1,
@@ -109,7 +100,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "mort",
-    label: "Mortgage interest rate",
     min: 0.1,
     max: 15,
     step: 0.01,
@@ -119,7 +109,6 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "penalty",
-    label: "Prepayment penalty",
     min: 0,
     max: 5,
     step: 0.1,
@@ -127,7 +116,7 @@ export const PARAMS: ParamDef[] = [
     unit: "percent",
     decimals: 1,
   },
-  { key: "years", label: "Time horizon", min: 15, max: 30, step: 1, defaultValue: 25, unit: "years" },
+  { key: "years", min: 15, max: 30, step: 1, defaultValue: 25, unit: "years" },
 ];
 
 export function paramDef(key: NumericKey): ParamDef {
@@ -194,15 +183,6 @@ export function initialMaxes(inputs: AppInputs): Maxes {
   return fitMaxes(inputs, defaultMaxes());
 }
 
-/** Parses typed text: accepts spaces as thousand separators and a decimal comma or point. */
-export function parseTyped(text: string): number | null {
-  const cleaned = text
-    .replace(/[\s  ]/g, "")
-    .replace(",", ".")
-    .replace("−", "-");
-  return /^-?\d+(\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
-}
-
 export type TypedError =
   { kind: "notNumber" } | { kind: "belowMin"; limit: number } | { kind: "aboveMax"; limit: number };
 
@@ -211,10 +191,17 @@ export type TypedResult = { ok: true; inputs: AppInputs; maxes: Maxes } | { ok: 
 /**
  * Applies a value typed into a field. It is rounded to the allowed decimals, must be at least the
  * slider minimum and at most the hard maximum; a value above the slider maximum extends the slider.
+ * The text is read with the language's number format (see `parseLocalizedNumber`).
  */
-export function applyTypedValue(inputs: AppInputs, maxes: Maxes, key: NumericKey, text: string): TypedResult {
+export function applyTypedValue(
+  inputs: AppInputs,
+  maxes: Maxes,
+  key: NumericKey,
+  text: string,
+  lang: Language,
+): TypedResult {
   const def = paramDef(key);
-  const parsed = parseTyped(text);
+  const parsed = parseLocalizedNumber(text, lang);
   if (parsed === null) return { ok: false, error: { kind: "notNumber" } };
   const factor = Math.pow(10, inputDecimals(def));
   const value = Math.round(parsed * factor) / factor;

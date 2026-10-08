@@ -34,7 +34,7 @@ Feature: Monthly simulation engine
 
   Scenario: The remaining loan never goes below zero
     Given the parameters:
-      | prepayment share | 100 % |
+      | prepayment share | 100% |
       | years            | 30    |
     When I run the simulation
     Then the remaining loans are never negative

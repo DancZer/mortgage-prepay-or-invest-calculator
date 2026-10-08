@@ -13,7 +13,7 @@ Feature: Path B – prepay the mortgage, then invest everything
         | loan amount           | 1 200 000 |
         | monthly installment   | 100 000   |
         | monthly extra savings | 50 000    |
-        | prepayment share      | 40 %      |
+        | prepayment share      | 40%      |
         | years                 | 2         |
       When I run the simulation
       Then the Path B mortgage is paid off in month 10
@@ -29,8 +29,8 @@ Feature: Path B – prepay the mortgage, then invest everything
         | loan amount           | 1 000 000 |
         | monthly installment   | 50 000    |
         | monthly extra savings | 10 000    |
-        | prepayment share      | 100 %     |
-        | mortgage rate         | 12 %      |
+        | prepayment share      | 100%     |
+        | mortgage rate         | 12%      |
       When I run the simulation
       Then the monthly results are:
         | month | loan B  |
@@ -43,7 +43,7 @@ Feature: Path B – prepay the mortgage, then invest everything
         | loan amount           | 1 000 000 |
         | monthly installment   | 100 000   |
         | monthly extra savings | <prepay>  |
-        | prepayment share      | 100 %     |
+        | prepayment share      | 100%     |
         | prepayment penalty    | <penalty> |
       When I run the simulation
       Then the monthly results are:
@@ -52,14 +52,14 @@ Feature: Path B – prepay the mortgage, then invest everything
 
       Examples:
         | penalty | prepay  |
-        | 0 %     | 100 000 |
-        | 2 %     | 102 000 |
-        | 5 %     | 105 000 |
+        | 0%     | 100 000 |
+        | 2%     | 102 000 |
+        | 5%     | 105 000 |
 
     Scenario: Prepaying all extra savings leaves nothing to invest until the payoff
       Given the default parameters
       And the parameters:
-        | prepayment share | 100 % |
+        | prepayment share | 100% |
       When I run the simulation
       Then Path B invests nothing before month 130
 
@@ -68,7 +68,7 @@ Feature: Path B – prepay the mortgage, then invest everything
       n = −ln(1 − r·P / A) / ln(1 + r) = 288.2, so the last payment falls in month 289.
       Given the default parameters
       And the parameters:
-        | prepayment share | 0 % |
+        | prepayment share | 0% |
         | years            | 30  |
       When I run the simulation
       Then the Path A mortgage is paid off in month 289
@@ -91,7 +91,7 @@ Feature: Path B – prepay the mortgage, then invest everything
         | loan amount           | 1 000 000 |
         | monthly installment   | 100 000   |
         | monthly extra savings | 50 000    |
-        | prepayment share      | 100 %     |
+        | prepayment share      | 100%     |
         | years                 | 1         |
       When I run the simulation
       Then the Path B mortgage is paid off in month 7
@@ -109,8 +109,8 @@ Feature: Path B – prepay the mortgage, then invest everything
         | loan amount           | 1 020 000 |
         | monthly installment   | 100 000   |
         | monthly extra savings | 51 000    |
-        | prepayment share      | 100 %     |
-        | prepayment penalty    | 2 %       |
+        | prepayment share      | 100%     |
+        | prepayment penalty    | 2%       |
         | years                 | 1         |
       When I run the simulation
       Then the Path B mortgage is paid off in month 7
@@ -126,7 +126,7 @@ Feature: Path B – prepay the mortgage, then invest everything
         | loan amount           | 1 200 000 |
         | monthly installment   | 100 000   |
         | monthly extra savings | 50 000    |
-        | prepayment share      | 0 %       |
+        | prepayment share      | 0%       |
         | years                 | 1         |
       When I run the simulation
       Then the Path B mortgage is paid off in month 12
@@ -143,7 +143,7 @@ Feature: Path B – prepay the mortgage, then invest everything
         | property value        | 1 200 000 |
         | monthly installment   | 100 000   |
         | monthly extra savings | 50 000    |
-        | prepayment share      | 40 %      |
+        | prepayment share      | 40%      |
         | years                 | 2         |
       When I run the simulation
       Then the monthly results are:
@@ -153,11 +153,11 @@ Feature: Path B – prepay the mortgage, then invest everything
 
     Scenario: The user's case – prepaying all 150 000 pays off in year 11, month 10
       Year 12 is the first full mortgage-free year. The extra savings are 150 000 × 1.04^11 = 230 918.10,
-      rounded to 230 918 Ft, so 12 × (300 000 + 230 918) = 6 371 016 are invested.
+      rounded to Ft 230,918, so 12 × (300 000 + 230 918) = 6 371 016 are invested.
       Year 11 is a partial year: the payoff month's leftover (131 454) plus 2 × (300 000 + 222 037).
       Given the default parameters
       And the parameters:
-        | prepayment share | 100 % |
+        | prepayment share | 100% |
       When I run the simulation
       Then the Path B mortgage is paid off in month 130
       And from month 131 to month 300 Path B invests the monthly installment plus that month's extra savings
@@ -170,7 +170,7 @@ Feature: Path B – prepay the mortgage, then invest everything
     Scenario: The mortgage is not paid off within the horizon
       Given the default parameters
       And the parameters:
-        | prepayment share | 0 % |
+        | prepayment share | 0% |
         | years            | 15  |
       When I run the simulation
       Then the Path B mortgage is not paid off within the horizon

@@ -1,4 +1,5 @@
 import { DEFAULT_CURRENCY, isCurrencyCode } from "./currency";
+import { detectLanguage, isLanguage, type Language } from "./i18n";
 import { applyInput, defaultInputs, isAllowedValue, PARAMS } from "./params";
 import type { AppInputs } from "./scenarios";
 
@@ -42,6 +43,28 @@ export function loadInputs(store: KeyValueStore | null): AppInputs {
     if (isAllowedValue(def, value)) inputs = applyInput(inputs, def.key, value);
   }
   return inputs;
+}
+
+/** Where the chosen language is kept. */
+export const LANGUAGE_KEY = "mortgage-vs-investment:language";
+
+export function saveLanguage(store: KeyValueStore | null, lang: Language): void {
+  try {
+    store?.setItem(LANGUAGE_KEY, lang);
+  } catch {
+    // Ignored, as for the inputs.
+  }
+}
+
+/** The language the user chose before, or else the first supported browser language, or else English. */
+export function loadLanguage(store: KeyValueStore | null, browserLanguages: readonly string[]): Language {
+  try {
+    const saved = store?.getItem(LANGUAGE_KEY);
+    if (isLanguage(saved)) return saved;
+  } catch {
+    // Fall through to the browser's languages.
+  }
+  return detectLanguage(browserLanguages);
 }
 
 /** The browser's localStorage, or null when it isn't available. */

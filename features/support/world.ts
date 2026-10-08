@@ -1,5 +1,6 @@
 import { setWorldConstructor, World, type IWorldOptions } from "@cucumber/cucumber";
 import type { SimResult } from "../../src/calc";
+import type { Language } from "../../src/i18n";
 import { defaultInputs, defaultMaxes, type Maxes } from "../../src/params";
 import { breakEvenReturn, runScenarios, type AppInputs, type BreakEven, type Scenarios } from "../../src/scenarios";
 import type { KeyValueStore } from "../../src/storage";
@@ -18,6 +19,10 @@ export class MemoryStore implements KeyValueStore {
 /** State shared by the steps of one scenario. */
 export class SimWorld extends World {
   inputs: AppInputs = defaultInputs();
+  /** Language of all displayed texts; scenarios are written against English unless they say otherwise. */
+  lang: Language = "en";
+  /** Build date shown in the credits (ISO). */
+  buildDate = "2026-10-08";
   /** Current slider maximums, as in the app. */
   maxes: Maxes = defaultMaxes();
   /** Message shown for the last rejected typed value, if any. */

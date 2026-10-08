@@ -11,8 +11,8 @@ Feature: Remembering the user's inputs
   Scenario: A returning user gets their previous values back
     Given I used the app before with:
       | loan amount      | 30 000 000 |
-      | prepayment share | 80 %       |
-      | best-case return | 7 %        |
+      | prepayment share | 80%       |
+      | best-case return | 7%        |
       | currency         | EUR        |
     When I open the app
     Then the loan amount is set to 30 000 000

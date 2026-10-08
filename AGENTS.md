@@ -14,7 +14,8 @@ investment always beats prepaying — compare two strategies with their own numb
 
 Goal: maximise **net wealth = property value + investments − remaining loan**. Results are shown for a
 worst-case and a best-case investment return, with a break-even return and a plain-language verdict.
-The app will be sold commercially; the source is proprietary (see `LICENSE`).
+Available in Hungarian, Slovak, German and English. Open source under the MIT license (see `LICENSE`),
+created by László Tánczos (https://github.com/DancZer).
 
 ## Source of truth
 
@@ -42,6 +43,8 @@ Static single-page app, no backend. Everything runs in the browser; inputs are k
 | `src/params.ts`    | Slider definitions (defaults, ranges, steps), `applyInput` (keeps worst ≤ best), typed values and slider maximums (`applyTypedValue`, `fitMaxes`).                                       |
 | `src/currency.ts`  | Currencies (HUF/EUR/USD), rounding digits, money formatting (only the symbol changes).                                                                                                   |
 | `src/storage.ts`   | Save/load inputs; invalid or old data falls back to defaults.                                                                                                                            |
+| `src/i18n.ts`      | All user-visible texts in hu/sk/de/en, language detection, reading typed numbers per language.                                                                                           |
+| `src/about.ts`     | Author, GitHub link, copyright year and license link shown in the credits.                                                                                                               |
 | `src/view.ts`      | Pure display logic: cards, verdict, chart series, payoff marker, yearly table, texts.                                                                                                    |
 | `src/main.ts`      | DOM and Chart.js wiring only. No logic the scenarios cannot reach.                                                                                                                       |
 | `features/`        | Scenarios, step definitions (`step_definitions/`), test world (`support/`).                                                                                                              |
@@ -64,7 +67,9 @@ deploy if it fails.
 
 ## Rules
 
-- **Dependency licenses:** only packages that allow closed-source commercial use. Runtime: MIT,
+- **Texts:** never hard-code a user-visible text. Add it to every language in `src/i18n.ts`; the
+  scenario "No language is missing a text" fails otherwise. Translations should be checked by native speakers.
+- **Dependency licenses:** only permissively licensed packages, so the project stays MIT and anyone may reuse it. Runtime: MIT,
   Apache-2.0, BSD, ISC, 0BSD, CC0, BlueOak. Never GPL, AGPL, LGPL, SSPL, Commons Clause or
   "non-commercial" licenses (e.g. Highcharts, amCharts, AG Grid Enterprise, Handsontable).
   After installing anything: `npm run licenses` and `npm run notices`.

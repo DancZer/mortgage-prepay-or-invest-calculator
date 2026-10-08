@@ -2,7 +2,8 @@
   "name": "finance-app",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "author": "László Tánczos (https://github.com/DancZer)",
   "type": "module",
   "engines": {
     "node": ">=22"

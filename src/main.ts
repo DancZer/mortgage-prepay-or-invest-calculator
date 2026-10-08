@@ -9,22 +9,24 @@ import {
   Tooltip,
   type Plugin,
 } from "chart.js";
-import { toYearMonth } from "./calc";
-import { CURRENCIES, formatMoney, type CurrencyCode } from "./currency";
+import { CURRENCIES, type CurrencyCode } from "./currency";
+import { LANGUAGES, STRINGS, type Language } from "./i18n";
 import { applyInput, applyTypedValue, initialMaxes, PARAMS, type Maxes, type NumericKey } from "./params";
 import { breakEvenReturn, runScenarios, type AppInputs, type Case, type Scenarios } from "./scenarios";
-import { browserStore, loadInputs, saveInputs } from "./storage";
+import { browserStore, loadInputs, loadLanguage, saveInputs, saveLanguage } from "./storage";
 import {
   chartSeries,
+  credits,
   describeInputError,
-  DISCLAIMER,
+  describePayoff,
   fmtMillions,
   formatInputValue,
   formatParam,
   inputHint,
+  money,
   payoffMarker,
-  PRIVACY_NOTE,
   SERIES,
+  seriesLabel,
   summaryCards,
   unitLabel,
   verdict,
@@ -36,6 +38,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, 
 
 const store = browserStore();
 let inputs: AppInputs = loadInputs(store);
+let lang: Language = loadLanguage(store, navigator.languages ?? [navigator.language]);
 /** Current slider maximums; typing a larger value extends them (decision 0011). */
 let maxes: Maxes = initialMaxes(inputs);
 let tableCase: Case = "worst";
@@ -48,8 +51,7 @@ const warningEl = $("#warning");
 const tbodyEl = $<HTMLTableSectionElement>("#table tbody");
 const canvasEl = $<HTMLCanvasElement>("#chart");
 
-$("#disclaimer").textContent = DISCLAIMER;
-$("#privacy").textContent = PRIVACY_NOTE;
+const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
 /** Builds a row of toggle buttons; `onSelect` receives the chosen value. */
 function segmented<T extends string>(
@@ -88,20 +90,8 @@ segmented(
   },
 );
 
-segmented(
-  $("#table-case"),
-  [
-    ["worst", "Worst case"],
-    ["best", "Best case"],
-  ],
-  tableCase,
-  (c) => {
-    tableCase = c;
-    update();
-  },
-);
-
 interface SliderEls {
+  label: HTMLLabelElement;
   range: HTMLInputElement;
   field: HTMLInputElement;
   unit: HTMLElement;
@@ -122,15 +112,16 @@ for (const def of PARAMS) {
   const row = document.createElement("div");
   row.className = "slider";
   row.innerHTML = `
-    <label class="slider-label" for="${id}">${def.label}</label>
+    <label class="slider-label" for="${id}"></label>
     <span class="field">
       <input id="${id}" class="num" type="text" inputmode="decimal" autocomplete="off" aria-describedby="${id}-error" />
       <span class="unit"></span>
     </span>
-    <input class="range" type="range" min="${def.min}" step="${def.step}" aria-label="${def.label}" />
+    <input class="range" type="range" min="${def.min}" step="${def.step}" />
     <small class="hint"></small>
     <small class="error" id="${id}-error" role="alert" hidden></small>`;
   const els: SliderEls = {
+    label: row.querySelector(".slider-label")!,
     range: row.querySelector(".range")!,
     field: row.querySelector(".num")!,
     unit: row.querySelector(".unit")!,
@@ -146,9 +137,9 @@ for (const def of PARAMS) {
   });
   // Typed values apply on Enter or when the field loses focus.
   els.field.addEventListener("change", () => {
-    const result = applyTypedValue(inputs, maxes, def.key, els.field.value);
+    const result = applyTypedValue(inputs, maxes, def.key, els.field.value, lang);
     if (!result.ok) {
-      showError(els, describeInputError(def, result.error, inputs.currency));
+      showError(els, describeInputError(def, result.error, inputs.currency, lang));
       return;
     }
     inputs = result.inputs;
@@ -167,17 +158,78 @@ function syncSliders() {
   for (const def of PARAMS) {
     const els = sliderEls.get(def.key)!;
     const value = inputs[def.key];
+    els.label.textContent = STRINGS[lang].params[def.key];
+    els.range.setAttribute("aria-label", STRINGS[lang].params[def.key]);
     els.range.max = String(maxes[def.key]);
     els.range.value = String(value);
-    els.range.setAttribute("aria-valuetext", formatParam(def, inputs));
-    els.field.value = formatInputValue(def, value);
-    els.unit.textContent = unitLabel(def, inputs.currency);
-    els.hint.textContent = inputHint(def, inputs);
+    els.range.setAttribute("aria-valuetext", formatParam(def, inputs, lang));
+    els.field.value = formatInputValue(def, value, lang);
+    els.unit.textContent = unitLabel(def, inputs.currency, lang);
+    els.hint.textContent = inputHint(def, inputs, lang);
     els.hint.hidden = els.hint.textContent === "";
     showError(els, null);
   }
 }
-syncSliders();
+
+const buildDate = typeof __BUILD_DATE__ === "string" ? __BUILD_DATE__ : new Date().toISOString().slice(0, 10);
+
+/** Puts every fixed text of the page into the chosen language. */
+function renderTexts() {
+  const t = STRINGS[lang];
+  document.documentElement.lang = lang;
+  document.title = t.title;
+  $("#title").textContent = t.title;
+  $("#lede").innerHTML =
+    `<strong>${escapeHtml(t.pathA)}:</strong> ${escapeHtml(t.ledeA)}<br />` +
+    `<strong>${escapeHtml(t.pathB)}:</strong> ${escapeHtml(t.ledeB)}<br />${escapeHtml(t.ledeBoth)}`;
+  $("#currency").setAttribute("aria-label", t.labels.currency);
+  $("#language").setAttribute("aria-label", t.labels.language);
+  $("#table-case").setAttribute("aria-label", t.labels.tableCase);
+  $("#table-title").textContent = t.table.title;
+  $("#table-head").replaceChildren(
+    ...t.table.headers.map((h) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      return th;
+    }),
+  );
+  $("#disclaimer").textContent = t.disclaimer;
+  $("#privacy").textContent = t.privacy;
+
+  segmented(
+    $("#table-case"),
+    [
+      ["worst", t.table.worst],
+      ["best", t.table.best],
+    ],
+    tableCase,
+    (c) => {
+      tableCase = c;
+      update();
+    },
+  );
+  segmented(
+    $("#language"),
+    LANGUAGES.map((l) => [l, STRINGS[l].languageName] as [Language, string]),
+    lang,
+    (l) => {
+      lang = l;
+      saveLanguage(store, lang);
+      renderTexts();
+      syncSliders();
+      update();
+    },
+  );
+
+  const c = credits(lang, buildDate);
+  $("#credits").innerHTML = `
+    <div>${escapeHtml(c.createdBy)} · <a href="${c.authorUrl}" target="_blank" rel="noopener">${escapeHtml(c.authorLinkText)}</a></div>
+    <div>${escapeHtml(c.copyright)} · <a href="${c.licenseUrl}" target="_blank" rel="noopener">${escapeHtml(c.license)}</a></div>
+    <div>${escapeHtml(c.version)}</div>`;
+
+  chart.options.scales!.x!.title!.text = t.chart.axis;
+  SERIES.forEach((s, i) => (chart.data.datasets[i].label = seriesLabel(s, lang)));
+}
 
 const css = getComputedStyle(document.documentElement);
 const color = (name: string) => css.getPropertyValue(name).trim();
@@ -214,7 +266,7 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
   type: "line",
   data: {
     datasets: SERIES.map((s) => ({
-      label: s.label,
+      label: "",
       data: [],
       borderColor: color(s.colorVar),
       backgroundColor: s.fillToPrevious ? color(`${s.colorVar}-band`) : color(s.colorVar),
@@ -231,8 +283,8 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
     elements: { point: { radius: 0, hitRadius: 6 } },
     interaction: { mode: "index", intersect: false },
     scales: {
-      x: { type: "linear", min: 0, title: { display: true, text: "Years elapsed" }, ticks: { stepSize: 1 } },
-      y: { ticks: { callback: (v) => fmtMillions(Number(v)) } },
+      x: { type: "linear", min: 0, title: { display: true, text: "" }, ticks: { stepSize: 1 } },
+      y: { ticks: { callback: (v) => fmtMillions(Number(v), lang) } },
     },
     plugins: {
       legend: { labels: { boxHeight: 2 } },
@@ -240,11 +292,9 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
         callbacks: {
           title: (items) => {
             const m = Math.round((items[0].parsed.x ?? 0) * 12);
-            if (m === 0) return "Start";
-            const ym = toYearMonth(m);
-            return `Year ${ym.year}, month ${ym.month}`;
+            return m === 0 ? STRINGS[lang].chart.start : describePayoff(m, lang);
           },
-          label: (ctx) => `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y ?? 0, inputs.currency)}`,
+          label: (ctx) => `${ctx.dataset.label}: ${money(ctx.parsed.y ?? 0, inputs.currency, lang)}`,
         },
       },
     },
@@ -252,11 +302,9 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
   plugins: [payoffLine],
 });
 
-const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
-
 function renderCards(sc: Scenarios) {
   const be = breakEvenReturn(inputs);
-  cardsEl.innerHTML = summaryCards(inputs, sc, be)
+  cardsEl.innerHTML = summaryCards(inputs, sc, be, lang)
     .map(
       (c) => `
     <div class="card">
@@ -271,11 +319,10 @@ function renderCards(sc: Scenarios) {
     </div>`,
     )
     .join("");
-  verdictEl.textContent = verdict(inputs, sc, be);
+  verdictEl.textContent = verdict(inputs, sc, be, lang);
 }
 
 function renderTable(sc: Scenarios) {
-  const money = (v: number) => formatMoney(v, inputs.currency);
   tbodyEl.replaceChildren(
     ...yearlyTable(sc[tableCase]).map((r) => {
       const tr = document.createElement("tr");
@@ -295,7 +342,7 @@ function renderTable(sc: Scenarios) {
       ];
       cells.forEach((c, i) => {
         const td = document.createElement("td");
-        td.textContent = typeof c === "number" ? money(c) : c;
+        td.textContent = typeof c === "number" ? money(c, inputs.currency, lang) : c;
         if (i === 5 && typeof c === "number" && c < 0) td.className = "neg";
         tr.append(td);
       });
@@ -308,17 +355,19 @@ function update() {
   saveInputs(store, inputs);
   const sc = runScenarios(inputs);
 
-  const warning = warningMessage(inputs);
+  const warning = warningMessage(inputs, lang);
   warningEl.hidden = warning === null;
   warningEl.textContent = warning ?? "";
 
-  marker = payoffMarker(sc.worst);
+  marker = payoffMarker(sc.worst, lang);
   chart.options.scales!.x!.max = inputs.years;
-  chartSeries(sc).forEach((s, i) => (chart.data.datasets[i].data = s.points));
+  chartSeries(sc, lang).forEach((s, i) => (chart.data.datasets[i].data = s.points));
   chart.update();
 
   renderCards(sc);
   renderTable(sc);
 }
 
+renderTexts();
+syncSliders();
 update();

@@ -340,3 +340,24 @@ td.neg {
     padding: 16px;
   }
 }
+
+.sidebar-footer {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.segmented.languages {
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.credits {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.credits a {
+  color: var(--accent);
+}

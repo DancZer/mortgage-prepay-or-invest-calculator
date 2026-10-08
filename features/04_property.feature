@@ -17,7 +17,7 @@ Feature: Property value
     Given all rates are zero
     And the parameters:
       | property value  | 1 000 000 |
-      | property growth | 12 %      |
+      | property growth | 12%      |
     When I run the simulation
     Then the monthly results are:
       | month | property value |
@@ -28,6 +28,6 @@ Feature: Property value
   Scenario: Property growth adds the same amount to both paths, so it never changes the winner
     Given the default parameters
     And the parameters:
-      | property growth | 7 % |
+      | property growth | 7% |
     When I run the simulation
-    Then the difference between the paths is the same in every month as with 0 % property growth
+    Then the difference between the paths is the same in every month as with 0% property growth

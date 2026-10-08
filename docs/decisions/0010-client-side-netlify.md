@@ -1,6 +1,6 @@
 # 0010 – Client-side only, inputs in localStorage, hosted on Netlify
 
-**Status:** accepted, 2026-10-08
+**Status:** accepted, 2026-10-08; business-model notes superseded by 0012
 
 **Context:** The product is being validated with individual users first; the business model is not
 decided yet (recommendation: free public version first, white-label licensing for mortgage brokers and
