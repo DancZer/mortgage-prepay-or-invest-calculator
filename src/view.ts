@@ -65,16 +65,17 @@ export function describeInputError(def: ParamDef, error: TypedError, currency: C
   return error.kind === "belowMin" ? t.min(limit) : t.max(limit);
 }
 
-/** "Year 11, month 10" (1-based, in the chosen language) or "Not within horizon". */
+/** "Year 11, month 10" (1-based, in the chosen language), "Not within horizon", or "No mortgage" for month 0. */
 export function describePayoff(month: number | null, lang: Language): string {
   if (month === null) return STRINGS[lang].notWithinHorizon;
+  if (month === 0) return STRINGS[lang].noMortgage;
   const ym = toYearMonth(month);
   return STRINGS[lang].payoffDate(ym.year, ym.month);
 }
 
 /** "after 10 years 10 months" in the chosen language; empty when there is no payoff. */
 export function describeElapsed(month: number | null, lang: Language): string {
-  if (month === null) return "";
+  if (month === null || month === 0) return "";
   const { years, months } = elapsedTime(month);
   return STRINGS[lang].elapsed(years, months);
 }
@@ -200,7 +201,7 @@ export function chartSeries(sc: Scenarios, lang: Language): ChartSeries[] {
 
 /** Vertical marker where Path B's mortgage reaches zero (x in years elapsed). */
 export function payoffMarker(res: SimResult, lang: Language): { x: number; label: string } | null {
-  if (res.payoffMonthB === null) return null;
+  if (res.payoffMonthB === null || res.payoffMonthB === 0) return null;
   return { x: res.payoffMonthB / 12, label: STRINGS[lang].chart.marker(describePayoff(res.payoffMonthB, lang)) };
 }
 
@@ -221,7 +222,7 @@ export interface TableRow {
 
 /** One row per year, taken at the end of the year. */
 export function yearlyTable(res: SimResult): TableRow[] {
-  const payoffYear = res.payoffMonthB === null ? null : toYearMonth(res.payoffMonthB).year;
+  const payoffYear = !res.payoffMonthB ? null : toYearMonth(res.payoffMonthB).year;
   return res.rows
     .filter((r) => r.month > 0 && r.month % 12 === 0)
     .map((r) => {

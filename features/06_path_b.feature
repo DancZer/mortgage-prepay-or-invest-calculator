@@ -77,7 +77,7 @@ Feature: Path B – prepay the mortgage, then invest everything
       And Path B investments equal Path A investments up to month 360
       And the verdict is:
         """
-        You prepay nothing, so both strategies give the same result.
+        Nothing is prepaid within the time horizon, so both strategies give the same result.
         """
 
   Rule: In the payoff month only what the bank still needs is paid; the remainder is invested

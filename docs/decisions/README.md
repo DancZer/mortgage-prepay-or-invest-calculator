@@ -20,3 +20,4 @@ Template: **Status**, **Context**, **Decision**, **Consequences**.
 | [0011](0011-typed-inputs-extend-sliders.md)       | Typed values; values above the maximum extend the slider                  |
 | [0012](0012-open-source-mit.md)                   | Open source under the MIT license                                         |
 | [0013](0013-languages.md)                         | Hungarian, Slovak, German and English; number format follows the language |
+| [0014](0014-zero-as-input.md)                     | Every input accepts 0                                                     |

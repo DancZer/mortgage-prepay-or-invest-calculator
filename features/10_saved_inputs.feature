@@ -32,7 +32,7 @@ Feature: Remembering the user's inputs
     And the years is set to 20
 
   Scenario: A value below the slider minimum falls back to its default
-    Given the saved data is '{"loan": 5000000}'
+    Given the saved data is '{"loan": -1}'
     When I open the app
     Then the loan amount is set to 45 000 000
 

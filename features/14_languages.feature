@@ -122,9 +122,9 @@ Feature: Languages and credits
       Examples:
         | language  | typed     | message                   |
         | Hungarian | 1,234,567 | Adjon meg egy számot      |
-        | Hungarian | 5 000 000 | A minimum 10 000 000 Ft   |
-        | Slovak    | 5 000 000 | Minimum je 10 000 000 Ft  |
-        | German    | 5.000.000 | Minimum ist 10.000.000 Ft |
+        | Hungarian | -1        | A minimum 0 Ft            |
+        | Slovak    | -1        | Minimum je 0 Ft           |
+        | German    | -1        | Minimum ist 0 Ft          |
         | German    | 1.2.3     | Bitte eine Zahl eingeben  |
 
   Rule: Results are explained in the language

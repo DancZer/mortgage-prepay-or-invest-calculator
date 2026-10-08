@@ -82,7 +82,7 @@ Feature: Typing values into the inputs
       And the loan amount slider goes up to 165 000 000
 
   Rule: Values that cannot be used are rejected with a message and change nothing
-    Below the slider minimum is not allowed. The upper limits keep the model meaningful:
+    Below the slider minimum (0, or −5% for returns) is not allowed. The upper limits keep the model meaningful:
     100% for percentages (the prepayment share cannot exceed the savings), 100 years,
     and 1 000 000 000 000 for amounts.
 
@@ -93,7 +93,7 @@ Feature: Typing values into the inputs
 
       Examples:
         | parameter          | typed             | message                         |
-        | loan amount        | 5 000 000         | Minimum is Ft 10,000,000        |
+        | loan amount        | -1                | Minimum is Ft 0                 |
         | worst-case return  | -6                | Minimum is -5%                 |
         | prepayment share   | 120               | Maximum is 100%                |
         | mortgage rate      | 101               | Maximum is 100%                |
@@ -106,5 +106,5 @@ Feature: Typing values into the inputs
     Scenario: The message uses the chosen currency
       Given the parameters:
         | currency | EUR |
-      When I type "5 000 000" into the loan amount field
-      Then the input is rejected with "Minimum is €10,000,000"
+      When I type "-1" into the loan amount field
+      Then the input is rejected with "Minimum is €0"

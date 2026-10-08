@@ -556,3 +556,8 @@ Then("the credits are:", function (this: SimWorld, table: DataTable) {
   assert.equal(c.license, expected["license"], "license");
   assert.equal(c.licenseUrl, expected["license link"], "license link");
 });
+
+Then(/^0 is within the (.+) slider's range$/, function (this: SimWorld, name: string) {
+  const def = paramDef(paramKey(name));
+  assert.ok(def.min <= 0 && def.max >= 0, `${name}: slider range ${def.min}–${def.max} does not include 0`);
+});

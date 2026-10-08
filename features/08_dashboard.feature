@@ -63,7 +63,7 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | Path A: Not within horizon |
       And the verdict is:
         """
-        You prepay nothing, so both strategies give the same result.
+        Nothing is prepaid within the time horizon, so both strategies give the same result.
         """
 
   Scenario Outline: Payoff dates are shown as calendar year/month and as elapsed time

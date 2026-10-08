@@ -48,9 +48,9 @@ export interface MonthRow {
 
 export interface SimResult {
   rows: MonthRow[];
-  /** Month (1-based) in which the Path A loan reaches zero, or null if not within the horizon. */
+  /** Month (1-based) in which the Path A loan reaches zero; 0 when there is no loan; null if not within the horizon. */
   payoffMonthA: number | null;
-  /** Month (1-based) in which the Path B loan reaches zero, or null if not within the horizon. */
+  /** Month (1-based) in which the Path B loan reaches zero; 0 when there is no loan; null if not within the horizon. */
   payoffMonthB: number | null;
 }
 
@@ -83,8 +83,9 @@ export function simulate(p: ModelInputs): SimResult {
   let loanB = loanA;
   let invA = 0;
   let invB = 0;
-  let payoffMonthA: number | null = null;
-  let payoffMonthB: number | null = null;
+  // Without a loan both paths are mortgage-free from the start (month 0).
+  let payoffMonthA: number | null = loanA === 0 ? 0 : null;
+  let payoffMonthB: number | null = loanB === 0 ? 0 : null;
 
   const row = (month: number, extra: number, prepay: number, property: number, contribA: number, contribB: number) => ({
     month,
@@ -166,7 +167,7 @@ export function elapsedTime(month: number): { years: number; months: number } {
   return { years: Math.floor(month / 12), months: month % 12 };
 }
 
-/** True when the installment does not even cover the first month's interest. */
+/** True when there is a loan and the installment does not even cover the first month's interest. */
 export function installmentTooLow(p: Pick<ModelInputs, "loan" | "installment" | "mort">): boolean {
-  return p.installment <= p.loan * (p.mort / 100 / 12);
+  return p.loan > 0 && p.installment <= p.loan * (p.mort / 100 / 12);
 }

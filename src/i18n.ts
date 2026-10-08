@@ -55,6 +55,8 @@ export interface Strings {
   };
   payoffDate: (year: number, month: number) => string;
   notWithinHorizon: string;
+  /** Shown instead of a payoff date when the loan amount is 0. */
+  noMortgage: string;
   elapsed: (years: number, months: number) => string;
   verdict: {
     identical: string;
@@ -126,13 +128,14 @@ const en: Strings = {
   },
   payoffDate: (y, m) => `Year ${y}, month ${m}`,
   notWithinHorizon: "Not within horizon",
+  noMortgage: "No mortgage",
   elapsed: (y, m) =>
     "after " +
     [y > 0 ? `${y} ${y === 1 ? "year" : "years"}` : "", m > 0 ? `${m} ${m === 1 ? "month" : "months"}` : ""]
       .filter(Boolean)
       .join(" "),
   verdict: {
-    identical: "You prepay nothing, so both strategies give the same result.",
+    identical: "Nothing is prepaid within the time horizon, so both strategies give the same result.",
     bothTie: "Both strategies give the same result in both cases.",
     both: (w, aw, rw, ab, rb) =>
       `${w === "A" ? "Investing" : "Prepaying"} wins in both cases: by ${aw} at ${rw} a year and by ${ab} at ${rb} a year.`,
@@ -226,9 +229,10 @@ const hu: Strings = {
   },
   payoffDate: (y, m) => `${y}. év, ${m}. hónap`,
   notWithinHorizon: "Az időtávon belül nem",
+  noMortgage: "Nincs hitel",
   elapsed: (y, m) => [y > 0 ? `${y} év` : "", m > 0 ? `${m} hónap` : ""].filter(Boolean).join(" ") + " után",
   verdict: {
-    identical: "Nem törleszt elő, így a két stratégia eredménye azonos.",
+    identical: "Az időtávon belül nincs előtörlesztés, így a két stratégia eredménye azonos.",
     bothTie: "A két stratégia mindkét esetben azonos eredményt ad.",
     both: (w, aw, rw, ab, rb) =>
       `Mindkét esetben ${w === "A" ? "a befektetés" : "az előtörlesztés"} nyer: évi ${rw} hozamnál ${aw}, évi ${rb} hozamnál ${ab} különbséggel.`,
@@ -323,13 +327,14 @@ const sk: Strings = {
   },
   payoffDate: (y, m) => `${y}. rok, ${m}. mesiac`,
   notWithinHorizon: "Nie v rámci horizontu",
+  noMortgage: "Bez hypotéky",
   elapsed: (y, m) =>
     "po " +
     [y > 0 ? (y === 1 ? "1 roku" : `${y} rokoch`) : "", m > 0 ? (m === 1 ? "1 mesiaci" : `${m} mesiacoch`) : ""]
       .filter(Boolean)
       .join(" "),
   verdict: {
-    identical: "Nič predčasne nesplácate, preto obe stratégie dávajú rovnaký výsledok.",
+    identical: "V rámci časového horizontu sa nič predčasne nespláca, preto obe stratégie dávajú rovnaký výsledok.",
     bothTie: "Obe stratégie dávajú v oboch prípadoch rovnaký výsledok.",
     both: (w, aw, rw, ab, rb) =>
       `V oboch prípadoch vyhráva ${w === "A" ? "investovanie" : "predčasné splácanie"}: o ${aw} pri výnose ${rw} ročne a o ${ab} pri výnose ${rb} ročne.`,
@@ -423,13 +428,14 @@ const de: Strings = {
   },
   payoffDate: (y, m) => `Jahr ${y}, Monat ${m}`,
   notWithinHorizon: "Nicht im Zeitraum",
+  noMortgage: "Keine Hypothek",
   elapsed: (y, m) =>
     "nach " +
     [y > 0 ? (y === 1 ? "1 Jahr" : `${y} Jahren`) : "", m > 0 ? (m === 1 ? "1 Monat" : `${m} Monaten`) : ""]
       .filter(Boolean)
       .join(" "),
   verdict: {
-    identical: "Sie tilgen nichts vorzeitig, daher führen beide Strategien zum selben Ergebnis.",
+    identical: "Im Zeitraum wird nichts vorzeitig getilgt, daher führen beide Strategien zum selben Ergebnis.",
     bothTie: "Beide Strategien führen in beiden Fällen zum selben Ergebnis.",
     both: (w, aw, rw, ab, rb) =>
       `In beiden Fällen gewinnt ${w === "A" ? "das Investieren" : "die Sondertilgung"}: um ${aw} bei ${rw} pro Jahr und um ${ab} bei ${rb} pro Jahr.`,

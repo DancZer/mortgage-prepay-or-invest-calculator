@@ -35,7 +35,7 @@ export const BREAK_EVEN_MIN = -5;
 export const BREAK_EVEN_MAX = 30;
 
 export type BreakEven =
-  /** Nothing is prepaid, so both paths are identical at any return. */
+  /** Nothing is prepaid within the horizon (no prepayment share, savings, loan or time), so both paths are identical. */
   | { kind: "identical" }
   /** Investing wins above `rate`, prepaying below it. */
   | { kind: "at"; rate: number }
@@ -55,8 +55,12 @@ export function breakEvenReturn(a: AppInputs): BreakEven {
     const last = rows[rows.length - 1];
     return last.netA - last.netB;
   };
-  if (advantageA(BREAK_EVEN_MIN) >= 0) return { kind: "investAlways" };
-  if (advantageA(BREAK_EVEN_MAX) <= 0) return { kind: "prepayAlways" };
+  const atMin = advantageA(BREAK_EVEN_MIN);
+  const atMax = advantageA(BREAK_EVEN_MAX);
+  // No difference even at the extreme returns: nothing was actually prepaid (e.g. no loan or no savings).
+  if (Math.abs(atMin) < 1 && Math.abs(atMax) < 1) return { kind: "identical" };
+  if (atMin >= 0) return { kind: "investAlways" };
+  if (atMax <= 0) return { kind: "prepayAlways" };
   let low = BREAK_EVEN_MIN;
   let high = BREAK_EVEN_MAX;
   while (high - low > 0.001) {

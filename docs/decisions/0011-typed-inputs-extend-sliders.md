@@ -12,7 +12,7 @@ a decimal point are accepted. Percentages are rounded to 0.01, amounts and years
 - A value above the slider's current maximum extends the slider to value + 10 %, rounded up to the
   slider's step, so the value never sits at the very end. Maximums never shrink during a session and
   are recalculated from the saved values when the app is reopened.
-- Values below the slider minimum are rejected with a message (lowering minimums was not requested).
+- Values below the slider minimum are rejected with a message (minimums are 0 since 0014).
 - Hard upper limits: 100 % for percentages (the prepayment share cannot exceed the savings anyway),
   100 years, and 1 000 000 000 000 for amounts, which keeps the integer arithmetic of the model safe.
 

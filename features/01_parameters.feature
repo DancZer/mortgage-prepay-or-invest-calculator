@@ -3,23 +3,24 @@ Feature: Input parameters
   a minimum, a maximum and a step size. Money amounts are the same numbers in every
   currency; only the symbol changes (see 09_currency.feature).
 
+  Every input accepts 0 (decision 0014); only the returns go below 0, down to −5%.
   Reasons for values that differ from the original spec are in docs/decisions/.
 
   Scenario: Sliders have the specified defaults, ranges and steps, in this order
     Then the sliders are:
       | parameter             | default    | min        | max         | step      |
-      | property value        | 60 000 000 | 10 000 000 | 200 000 000 | 1 000 000 |
+      | property value        | 60 000 000 | 0          | 200 000 000 | 1 000 000 |
       | property growth       | 3.0%      | 0%        | 10%        | 0.5%     |
-      | loan amount           | 45 000 000 | 10 000 000 | 100 000 000 | 1 000 000 |
-      | monthly installment   | 300 000    | 100 000    | 600 000     | 10 000    |
-      | monthly extra savings | 150 000    | 20 000     | 500 000     | 10 000    |
+      | loan amount           | 45 000 000 | 0          | 100 000 000 | 1 000 000 |
+      | monthly installment   | 300 000    | 0          | 600 000     | 10 000    |
+      | monthly extra savings | 150 000    | 0          | 500 000     | 10 000    |
       | prepayment share      | 50%       | 0%        | 100%       | 5%       |
       | annual savings growth | 4.0%      | 0%        | 15%        | 0.5%     |
       | worst-case return     | 3.0%      | −5%       | 20%        | 0.1%     |
       | best-case return      | 10.0%     | −5%       | 20%        | 0.1%     |
-      | mortgage rate         | 6.18%     | 0.1%      | 15%        | 0.01%    |
+      | mortgage rate         | 6.18%     | 0%        | 15%        | 0.01%    |
       | prepayment penalty    | 1.5%      | 0%        | 5%         | 0.1%     |
-      | years                 | 25         | 15         | 30          | 1         |
+      | years                 | 25         | 0          | 30          | 1         |
 
   Scenario: Every default value can actually be selected on its slider
     Then every default value lies within its range and on its slider's step grid

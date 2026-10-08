@@ -23,7 +23,7 @@ export interface ParamDef {
 export const PARAMS: ParamDef[] = [
   {
     key: "property",
-    min: 10_000_000,
+    min: 0,
     max: 200_000_000,
     step: 1_000_000,
     defaultValue: 60_000_000,
@@ -40,7 +40,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "loan",
-    min: 10_000_000,
+    min: 0,
     max: 100_000_000,
     step: 1_000_000,
     defaultValue: 45_000_000,
@@ -48,7 +48,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "installment",
-    min: 100_000,
+    min: 0,
     max: 600_000,
     step: 10_000,
     defaultValue: 300_000,
@@ -56,7 +56,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "extra",
-    min: 20_000,
+    min: 0,
     max: 500_000,
     step: 10_000,
     defaultValue: 150_000,
@@ -100,7 +100,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "mort",
-    min: 0.1,
+    min: 0,
     max: 15,
     step: 0.01,
     defaultValue: 6.18,
@@ -116,7 +116,7 @@ export const PARAMS: ParamDef[] = [
     unit: "percent",
     decimals: 1,
   },
-  { key: "years", min: 15, max: 30, step: 1, defaultValue: 25, unit: "years" },
+  { key: "years", min: 0, max: 30, step: 1, defaultValue: 25, unit: "years" },
 ];
 
 export function paramDef(key: NumericKey): ParamDef {
