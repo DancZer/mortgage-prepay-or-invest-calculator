@@ -1,6 +1,6 @@
 # 0008 – Property value is separate from the loan and grows
 
-**Status:** accepted, 2026-10-08 (changes the original spec)
+**Status:** superseded by 0015 (2026-10-08); was accepted, 2026-10-08 (changes the original spec)
 
 **Context:** The spec used the loan amount as the property value, ignoring the down payment and
 house price growth, so net wealth figures were unrealistic.

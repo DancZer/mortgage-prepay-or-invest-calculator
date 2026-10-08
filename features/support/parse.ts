@@ -4,8 +4,6 @@ import type { AppInputs } from "../../src/scenarios";
 
 /** Human parameter names used in the feature files. */
 const PARAM_NAMES: Record<string, NumericKey> = {
-  "property value": "property",
-  "property growth": "appr",
   "loan amount": "loan",
   "monthly installment": "installment",
   "monthly extra savings": "extra",

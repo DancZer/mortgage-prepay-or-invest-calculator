@@ -113,8 +113,6 @@ const en: Strings = {
   ledeB: "prepay the mortgage with part of it.",
   ledeBoth: "Both invest the freed-up installment once their mortgage is paid off.",
   params: {
-    property: "Property value",
-    appr: "Property growth / year",
     loan: "Loan amount",
     installment: "Monthly installment",
     extra: "Monthly extra savings",
@@ -177,7 +175,6 @@ const en: Strings = {
     headers: [
       "Year",
       "Extra savings / month",
-      "Property value",
       "Net wealth A",
       "Net wealth B",
       "B − A",
@@ -201,9 +198,6 @@ const en: Strings = {
     button: (s) => `Explain: ${s}`,
     subjects: { verdict: "Summary", chart: "Chart" },
     params: {
-      property:
-        "Today's market value of the home. It counts towards your net wealth in both paths, so it never decides which path wins.",
-      appr: "How much the home's value is expected to rise per year. It is the same in both paths, so it only changes the size of your net wealth, not the winner.",
       loan: "The mortgage amount still owed today. Set it to 0 to see what happens without a mortgage.",
       installment:
         "The fixed monthly payment to the bank (interest + repayment). It stays the same until the loan is paid off; after that, both paths invest this amount every month.",
@@ -221,7 +215,7 @@ const en: Strings = {
         "A fee the bank charges on prepaid amounts, as a percentage. It makes prepaying more expensive and lowers the return at which investing wins.",
       years: "How many years the comparison covers. Net wealth is compared at the end of this period.",
     },
-    netA: "What Path A is worth at the end of the period: home value + investments − remaining loan, for the worst and the best investment return.",
+    netA: "What Path A is worth at the end of the period: investments − remaining loan, for the worst and the best investment return. The home is left out because it is the same in both paths.",
     netB: "The same for Path B, which prepays the mortgage with part of the savings and invests everything once the mortgage is paid off.",
     difference:
       "Path B minus Path A at the end. A positive amount (green) means prepaying came out ahead, a negative amount (blue) means investing did.",
@@ -249,8 +243,6 @@ const hu: Strings = {
   ledeB: "a megtakarítás egy részével előtörleszti a hitelt.",
   ledeBoth: "Mindkettő befekteti a felszabaduló törlesztőrészletet is, amint a hitelt visszafizette.",
   params: {
-    property: "Ingatlan értéke",
-    appr: "Ingatlan drágulása / év",
     loan: "Hitelösszeg",
     installment: "Havi törlesztőrészlet",
     extra: "Havi többletmegtakarítás",
@@ -310,7 +302,6 @@ const hu: Strings = {
     headers: [
       "Év",
       "Többletmegtakarítás / hó",
-      "Ingatlan értéke",
       "Nettó vagyon A",
       "Nettó vagyon B",
       "B − A",
@@ -335,9 +326,6 @@ const hu: Strings = {
     button: (s) => `Magyarázat: ${s}`,
     subjects: { verdict: "Összefoglaló", chart: "Grafikon" },
     params: {
-      property:
-        "Az ingatlan mai piaci értéke. Mindkét változatban beleszámít a nettó vagyonba, ezért sosem dönti el, melyik nyer.",
-      appr: "Mennyivel nő várhatóan évente az ingatlan értéke. Mindkét változatban ugyanannyi, így csak a vagyon nagyságát változtatja, a győztest nem.",
       loan: "A ma még fennálló hiteltartozás. Ha 0-ra állítja, látja, mi történik hitel nélkül.",
       installment:
         "A bankba fizetett fix havi összeg (kamat + tőketörlesztés). A hitel visszafizetéséig változatlan; utána mindkét változat ezt az összeget is befekteti havonta.",
@@ -355,7 +343,7 @@ const hu: Strings = {
         "Az előtörlesztett összeg után fizetendő banki díj, százalékban. Drágábbá teszi az előtörlesztést, és csökkenti azt a hozamot, amely felett a befektetés nyer.",
       years: "Hány évre szól az összehasonlítás. A nettó vagyonokat az időszak végén hasonlítjuk össze.",
     },
-    netA: "Az A változat értéke az időszak végén: ingatlan + befektetések − fennmaradó hitel, a legrosszabb és a legjobb befektetési hozammal.",
+    netA: "Az A változat értéke az időszak végén: befektetések − fennmaradó hitel, a legrosszabb és a legjobb befektetési hozammal. Az ingatlan nem számít bele, mert mindkét változatban ugyanaz.",
     netB: "Ugyanez a B változatra, amely a megtakarítás egy részével előtörleszt, majd a hitel visszafizetése után mindent befektet.",
     difference:
       "A B változat mínusz az A változat az időszak végén. A pozitív összeg (zöld) azt jelenti, hogy az előtörlesztés járt jobban, a negatív (kék), hogy a befektetés.",
@@ -383,8 +371,6 @@ const sk: Strings = {
   ledeB: "časťou úspor predčasne spláca hypotéku.",
   ledeBoth: "Po splatení hypotéky obe investujú aj uvoľnenú splátku.",
   params: {
-    property: "Hodnota nehnuteľnosti",
-    appr: "Rast ceny nehnuteľnosti",
     loan: "Výška úveru",
     installment: "Mesačná splátka",
     extra: "Mesačné dodatočné úspory",
@@ -450,7 +436,6 @@ const sk: Strings = {
     headers: [
       "Rok",
       "Dodatočné úspory / mesiac",
-      "Hodnota nehnuteľnosti",
       "Čistý majetok A",
       "Čistý majetok B",
       "B − A",
@@ -474,9 +459,6 @@ const sk: Strings = {
     button: (s) => `Vysvetlenie: ${s}`,
     subjects: { verdict: "Zhrnutie", chart: "Graf" },
     params: {
-      property:
-        "Dnešná trhová hodnota nehnuteľnosti. V oboch variantoch sa započítava do čistého majetku, preto nikdy nerozhoduje o víťazovi.",
-      appr: "O koľko má hodnota nehnuteľnosti ročne rásť. V oboch variantoch je rovnaká, mení teda len výšku majetku, nie víťaza.",
       loan: "Výška úveru, ktorú dnes ešte dlhujete. Pri hodnote 0 uvidíte, čo sa stane bez hypotéky.",
       installment:
         "Pevná mesačná platba banke (úrok + splátka istiny). Platí do splatenia úveru; potom obe varianty investujú každý mesiac aj túto sumu.",
@@ -494,7 +476,7 @@ const sk: Strings = {
         "Poplatok banky z predčasne splatenej sumy, v percentách. Predčasné splácanie zdražuje a znižuje výnos, nad ktorým vyhráva investovanie.",
       years: "Koľko rokov porovnanie pokrýva. Čistý majetok sa porovnáva na konci tohto obdobia.",
     },
-    netA: "Hodnota variantu A na konci obdobia: nehnuteľnosť + investície − zostávajúci úver, pre najhorší aj najlepší výnos investícií.",
+    netA: "Hodnota variantu A na konci obdobia: investície − zostávajúci úver, pre najhorší aj najlepší výnos investícií. Nehnuteľnosť sa nezapočítava, lebo je v oboch variantoch rovnaká.",
     netB: "To isté pre variant B, ktorý časťou úspor predčasne spláca hypotéku a po jej splatení investuje všetko.",
     difference:
       "Variant B mínus variant A na konci obdobia. Kladná suma (zelená) znamená, že lepšie vyšlo predčasné splácanie, záporná (modrá), že investovanie.",
@@ -521,8 +503,6 @@ const de: Strings = {
   ledeB: "tilgt mit einem Teil davon die Hypothek vorzeitig.",
   ledeBoth: "Beide investieren die frei werdende Rate, sobald die Hypothek abbezahlt ist.",
   params: {
-    property: "Immobilienwert",
-    appr: "Wertsteigerung / Jahr",
     loan: "Darlehensbetrag",
     installment: "Monatliche Rate",
     extra: "Monatl. Zusatzersparnis",
@@ -586,7 +566,6 @@ const de: Strings = {
     headers: [
       "Jahr",
       "Zusatzersparnis / Monat",
-      "Immobilienwert",
       "Nettovermögen A",
       "Nettovermögen B",
       "B − A",
@@ -611,9 +590,6 @@ const de: Strings = {
     button: (s) => `Erklärung: ${s}`,
     subjects: { verdict: "Zusammenfassung", chart: "Diagramm" },
     params: {
-      property:
-        "Der heutige Marktwert der Immobilie. Er zählt in beiden Varianten zum Nettovermögen und entscheidet daher nie, welche gewinnt.",
-      appr: "Wie stark der Wert der Immobilie voraussichtlich pro Jahr steigt. Er ist in beiden Varianten gleich und ändert nur die Höhe des Vermögens, nicht den Gewinner.",
       loan: "Der heute noch offene Darlehensbetrag. Mit 0 sehen Sie, was ohne Hypothek passiert.",
       installment:
         "Die feste monatliche Zahlung an die Bank (Zinsen + Tilgung). Sie bleibt bis zur vollständigen Rückzahlung gleich; danach investieren beide Varianten auch diesen Betrag jeden Monat.",
@@ -631,7 +607,7 @@ const de: Strings = {
         "Eine Gebühr der Bank auf vorzeitig getilgte Beträge, in Prozent. Sie verteuert die Sondertilgung und senkt die Rendite, ab der Investieren gewinnt.",
       years: "Wie viele Jahre der Vergleich umfasst. Das Nettovermögen wird am Ende dieses Zeitraums verglichen.",
     },
-    netA: "Was Variante A am Ende wert ist: Immobilie + Anlagen − Restschuld, für die ungünstige und die günstige Rendite.",
+    netA: "Was Variante A am Ende wert ist: Anlagen − Restschuld, für die ungünstige und die günstige Rendite. Die Immobilie zählt nicht mit, weil sie in beiden Varianten gleich ist.",
     netB: "Dasselbe für Variante B, die mit einem Teil der Ersparnis vorzeitig tilgt und nach der Rückzahlung alles investiert.",
     difference:
       "Variante B minus Variante A am Ende. Ein positiver Betrag (grün) bedeutet, dass die Sondertilgung vorn liegt, ein negativer (blau), dass das Investieren vorn liegt.",

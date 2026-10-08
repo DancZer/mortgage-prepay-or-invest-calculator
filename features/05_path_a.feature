@@ -10,7 +10,6 @@ Feature: Path A – pure investment
 
   Some scenarios use values below the sliders' ranges (small loans, 0% rates) so the
   expected results can be checked by hand. The model accepts any value; only the sliders limit them.
-  Where net wealth is checked, the property value is set equal to the loan amount.
 
   Scenario: The loan is amortised with the fixed installment, interest first
     Given all rates are zero
@@ -41,7 +40,6 @@ Feature: Path A – pure investment
     Given all rates are zero
     And the parameters:
       | loan amount           | 1 200 000 |
-      | property value        | 1 200 000 |
       | monthly installment   | 100 000   |
       | monthly extra savings | 50 000    |
       | prepayment share      | 0%       |
@@ -50,8 +48,8 @@ Feature: Path A – pure investment
     Then the Path A mortgage is paid off in month 12
     And the monthly results are:
       | month | loan A  | investments A | net wealth A |
-      | 11    | 100 000 | 550 000       | 1 650 000    |
-      | 12    | 0       | 600 000       | 1 800 000    |
+      | 11    | 100 000 | 550 000       | 450 000      |
+      | 12    | 0       | 600 000       | 600 000      |
 
   Scenario: In the payoff month, the part of the installment the bank doesn't need is invested
     The last balance is 50 000, so 50 000 of the 100 000 installment is left over and invested.
@@ -73,7 +71,6 @@ Feature: Path A – pure investment
     Given all rates are zero
     And the parameters:
       | loan amount           | 1 200 000 |
-      | property value        | 1 200 000 |
       | monthly installment   | 100 000   |
       | monthly extra savings | 50 000    |
       | years                 | 2         |
@@ -81,9 +78,9 @@ Feature: Path A – pure investment
     Then the Path A mortgage is paid off in month 12
     And the monthly results are:
       | month | loan A | invested A | investments A | net wealth A |
-      | 12    | 0      | 50 000     | 600 000       | 1 800 000    |
-      | 13    | 0      | 150 000    | 750 000       | 1 950 000    |
-      | 24    | 0      | 150 000    | 2 400 000     | 3 600 000    |
+      | 12    | 0      | 50 000     | 600 000       | 600 000      |
+      | 13    | 0      | 150 000    | 750 000       | 750 000      |
+      | 24    | 0      | 150 000    | 2 400 000     | 2 400 000    |
 
   Scenario: After payoff, Path A's investment grows with inflation like Path B's
     Given the default parameters

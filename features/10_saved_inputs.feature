@@ -55,7 +55,14 @@ Feature: Remembering the user's inputs
     Given the saved data is '{"loan": 30000000}'
     When I open the app
     Then the loan amount is set to 30 000 000
-    And the property value is set to 60 000 000
+    And the monthly installment is set to 300 000
+
+  Scenario: Values of removed inputs in old saved data are ignored
+    Older versions also saved the property value and its growth (removed in decision 0015).
+    Given the saved data is '{"loan": 30000000, "property": 80000000, "appr": 5}'
+    When I open the app
+    Then the loan amount is set to 30 000 000
+    And no removed inputs are kept
 
   Scenario: Saved worst and best cases in the wrong order are put back in order
     Given the saved data is '{"invWorst": 12, "invBest": 5}'

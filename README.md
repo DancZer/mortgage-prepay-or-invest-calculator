@@ -6,7 +6,7 @@ Should you prepay your mortgage or invest? This browser app compares two strateg
 - **Path B:** use a share of the extra savings to prepay the mortgage (after a prepayment penalty) and invest the rest.
 - Both paths invest the freed-up installment plus all extra savings once their mortgage is paid off.
 
-Results — net wealth (property + investments − loan) — are shown for a worst-case and a best-case investment
+Results — net wealth (investments − remaining loan) — are shown for a worst-case and a best-case investment
 return, together with the **break-even return** above which investing wins, a plain-language verdict, a chart
 and a year-by-year table. Amounts can be shown in forint, euro or dollar. Inputs are remembered in the browser.
 

@@ -11,8 +11,6 @@ Feature: Zero as an input
 
     Examples:
       | parameter             |
-      | property value        |
-      | property growth       |
       | loan amount           |
       | monthly installment   |
       | monthly extra savings |
@@ -102,7 +100,7 @@ Feature: Zero as an input
       """
 
   Scenario: With a time horizon of 0 years nothing happens, and both paths are the same
-    The result is the starting position: property value − loan = 60 000 000 − 45 000 000.
+    The result is the starting position: nothing invested yet, minus the loan of 45 000 000.
     Given the default parameters
     And the parameters:
       | years | 0 |
@@ -111,8 +109,8 @@ Feature: Zero as an input
     And the yearly table has 0 rows
     And the final net wealth is:
       | path | worst case    | best case     |
-      | A    | Ft 15,000,000 | Ft 15,000,000 |
-      | B    | Ft 15,000,000 | Ft 15,000,000 |
+      | A    | -Ft 45,000,000 | -Ft 45,000,000 |
+      | B    | -Ft 45,000,000 | -Ft 45,000,000 |
     And the mortgage-free card shows, for a loan starting in October 2026:
       | path | time               | date |
       | A    | Not within horizon |      |
@@ -122,12 +120,3 @@ Feature: Zero as an input
       """
       Nothing is prepaid within the time horizon, so both strategies give the same result.
       """
-
-  Scenario: Without a property the net wealth starts negative
-    Given the default parameters
-    And the parameters:
-      | property value | 0 |
-    When I run the simulation
-    Then the monthly results are:
-      | month | net wealth A | net wealth B |
-      | 0     | −45 000 000  | −45 000 000  |

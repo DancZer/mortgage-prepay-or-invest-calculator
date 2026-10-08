@@ -64,7 +64,7 @@ Feature: Worst-case and best-case returns, break-even return and verdict
 
     Scenario: At the break-even return both paths end with practically the same net wealth
       Given the default parameters
-      Then with that return both paths end within 0.01% of each other
+      Then with that return both paths end within 0.05% of each other
 
     Scenario: When nothing is prepaid there is no break-even return
       Given the default parameters

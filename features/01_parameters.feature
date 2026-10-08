@@ -1,5 +1,5 @@
 Feature: Input parameters
-  The user adjusts twelve parameters with sliders. Every slider has a default value,
+  The user adjusts ten parameters with sliders. Every slider has a default value,
   a minimum, a maximum and a step size. Money amounts are the same numbers in every
   currency; only the symbol changes (see 09_currency.feature).
 
@@ -9,8 +9,6 @@ Feature: Input parameters
   Scenario: Sliders have the specified defaults, ranges and steps, in this order
     Then the sliders are:
       | parameter             | default    | min        | max         | step      |
-      | property value        | 60 000 000 | 0          | 200 000 000 | 1 000 000 |
-      | property growth       | 3.0%      | 0%        | 10%        | 0.5%     |
       | loan amount           | 45 000 000 | 0          | 100 000 000 | 1 000 000 |
       | monthly installment   | 300 000    | 0          | 600 000     | 10 000    |
       | monthly extra savings | 150 000    | 0          | 500 000     | 10 000    |

@@ -12,7 +12,7 @@ investment always beats prepaying — compare two strategies with their own numb
 - **Path B:** use a share of the extra savings to prepay the mortgage (minus a penalty), invest the rest.
 - Both paths invest the freed-up installment plus all extra savings once their mortgage is paid off.
 
-Goal: maximise **net wealth = property value + investments − remaining loan**. Results are shown for a
+Goal: maximise **net wealth = investments − remaining loan** (the home is left out; it is the same in both paths). Results are shown for a
 worst-case and a best-case investment return, with a break-even return and a plain-language verdict.
 Available in Hungarian, Slovak, German and English. Open source under the MIT license (see `LICENSE`),
 created by László Tánczos (https://github.com/DancZer).

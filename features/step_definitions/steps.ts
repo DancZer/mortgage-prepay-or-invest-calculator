@@ -39,7 +39,7 @@ Given("the default parameters", function (this: SimWorld) {
 });
 
 Given("all rates are zero", function (this: SimWorld) {
-  this.update({ inf: 0, invWorst: 0, invBest: 0, mort: 0, penalty: 0, appr: 0 });
+  this.update({ inf: 0, invWorst: 0, invBest: 0, mort: 0, penalty: 0 });
 });
 
 Given("the parameters:", function (this: SimWorld, table: DataTable) {
@@ -184,7 +184,6 @@ Then("the simulation has {int} monthly steps", function (this: SimWorld, months:
 const MONTH_COLUMNS: Record<string, keyof MonthRow> = {
   "extra savings": "extra",
   prepayment: "prepay",
-  "property value": "property",
   "loan a": "loanA",
   "invested a": "contribA",
   "investments a": "invA",
@@ -251,12 +250,12 @@ Then("Path B investments equal Path A investments up to month {int}", function (
 });
 
 Then(
-  "in every month, net wealth equals the property value plus investments minus the remaining loan, for both paths",
+  "in every month, net wealth equals investments minus the remaining loan, for both paths",
   function (this: SimWorld) {
     for (const c of ["worst", "best"] as Case[]) {
       for (const r of this.scenarios[c].rows) {
-        assert.ok(Math.abs(r.netA - (r.property + r.invA - r.loanA)) < 1e-6, `${c} case, month ${r.month}: Path A`);
-        assert.ok(Math.abs(r.netB - (r.property + r.invB - r.loanB)) < 1e-6, `${c} case, month ${r.month}: Path B`);
+        assert.ok(Math.abs(r.netA - (r.invA - r.loanA)) < 1e-6, `${c} case, month ${r.month}: Path A`);
+        assert.ok(Math.abs(r.netB - (r.invB - r.loanB)) < 1e-6, `${c} case, month ${r.month}: Path B`);
       }
     }
   },
@@ -268,19 +267,6 @@ Then("the remaining loans are never negative", function (this: SimWorld) {
     assert.ok(r.loanB >= 0, `month ${r.month}: Path B loan ${r.loanB}`);
   }
 });
-
-Then(
-  "the difference between the paths is the same in every month as with {int}% property growth",
-  function (this: SimWorld, growth: number) {
-    const other = runScenarios({ ...this.inputs, appr: growth });
-    for (const c of ["worst", "best"] as Case[]) {
-      this.scenarios[c].rows.forEach((r, m) => {
-        const o = other[c].rows[m];
-        assert.ok(Math.abs(r.netB - r.netA - (o.netB - o.netA)) < 1e-6, `${c} case, month ${m}`);
-      });
-    }
-  },
-);
 
 Then("the loan and the payoff months are the same in the worst and the best case", function (this: SimWorld) {
   const { worst, best } = this.scenarios;
@@ -482,7 +468,6 @@ Then("the chart has no payoff marker", function (this: SimWorld) {
 
 const TABLE_COLUMNS: Record<string, keyof TableRow> = {
   "extra savings / month": "extra",
-  "property value": "property",
   "net wealth a": "netA",
   "net wealth b": "netB",
   "b − a": "diff",
@@ -710,4 +695,8 @@ Then(/^the explanation of the (.+) is:$/, function (this: SimWorld, name: string
 
 Then(/^the "\?" button of the (.+) is announced as "(.+)"$/, function (this: SimWorld, name: string, label: string) {
   assert.equal(STRINGS[this.lang].help.button(STRINGS[this.lang].params[paramKey(name)]), label);
+});
+
+Then("no removed inputs are kept", function (this: SimWorld) {
+  assert.deepEqual(Object.keys(this.inputs).sort(), Object.keys(defaultInputs()).sort());
 });

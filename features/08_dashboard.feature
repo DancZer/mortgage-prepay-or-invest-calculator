@@ -12,7 +12,6 @@ Feature: Dashboard – cards, verdict, chart and yearly table
     Given all rates are zero
     And the parameters:
       | loan amount           | 1 200 000 |
-      | property value        | 1 200 000 |
       | monthly installment   | 100 000   |
       | monthly extra savings | 51 000    |
       | prepayment share      | 100%     |
@@ -31,8 +30,8 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | Mortgage-free           |
       And the final net wealth is:
         | path | worst case   | best case    |
-        | A    | Ft 3,624,000 | Ft 3,624,000 |
-        | B    | Ft 3,616,000 | Ft 3,616,000 |
+        | A    | Ft 2,424,000 | Ft 2,424,000 |
+        | B    | Ft 2,416,000 | Ft 2,416,000 |
       And the "Difference B − A" card shows "-Ft 8,000 / -Ft 8,000"
       And the "Difference B − A" card has no notes
       And the difference is shown in the colour of the path that is ahead:
@@ -56,8 +55,8 @@ Feature: Dashboard – cards, verdict, chart and yearly table
       When I run the simulation
       Then the final net wealth is:
         | path | worst case   | best case    |
-        | A    | Ft 1,212,000 | Ft 1,212,000 |
-        | B    | Ft 1,212,000 | Ft 1,212,000 |
+        | A    | Ft 12,000    | Ft 12,000    |
+        | B    | Ft 12,000    | Ft 12,000    |
       And the "Difference B − A" card shows "Ft 0 / Ft 0"
       And the difference is shown in the colour of the path that is ahead:
         | worst case | neither |
@@ -113,9 +112,9 @@ Feature: Dashboard – cards, verdict, chart and yearly table
     Scenario: One row per year, payoff year highlighted
       When I run the simulation
       Then the yearly table is:
-        | year | extra savings / month | property value | net wealth A | net wealth B | B − A  | loan A | loan B | invested B (year) | investments A | investments B | payoff year |
-        | 1    | 51 000                | 1 200 000      | 1 812 000    | 1 804 000    | −8 000 | 0      | 0      | 604 000           | 612 000       | 604 000       | yes         |
-        | 2    | 51 000                | 1 200 000      | 3 624 000    | 3 616 000    | −8 000 | 0      | 0      | 1 812 000         | 2 424 000     | 2 416 000     | no          |
+        | year | extra savings / month | net wealth A | net wealth B | B − A  | loan A | loan B | invested B (year) | investments A | investments B | payoff year |
+        | 1    | 51 000                | 612 000      | 604 000      | −8 000 | 0      | 0      | 604 000           | 612 000       | 604 000       | yes         |
+        | 2    | 51 000                | 2 424 000    | 2 416 000    | −8 000 | 0      | 0      | 1 812 000         | 2 424 000     | 2 416 000     | no          |
 
     Scenario: The table can show the best case
       Best case: 51 000 invested at the start of each month, 1% return a month rounded to whole

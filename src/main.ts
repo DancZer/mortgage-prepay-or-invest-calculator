@@ -368,23 +368,11 @@ function renderTable(sc: Scenarios, shownCase: Case = tableCase, highlighted: Hi
     ...yearlyTable(sc[shownCase]).map((r) => {
       const tr = document.createElement("tr");
       if (r.isPayoffYear) tr.className = "payoff";
-      const cells = [
-        String(r.year),
-        r.extra,
-        r.property,
-        r.netA,
-        r.netB,
-        r.diff,
-        r.loanA,
-        r.loanB,
-        r.investedB,
-        r.invA,
-        r.invB,
-      ];
+      const cells = [String(r.year), r.extra, r.netA, r.netB, r.diff, r.loanA, r.loanB, r.investedB, r.invA, r.invB];
       cells.forEach((c, i) => {
         const td = document.createElement("td");
         td.textContent = typeof c === "number" ? money(c, inputs.currency, lang) : c;
-        if (i === 5 && typeof c === "number" && c < 0) td.className = "neg";
+        if (i === 4 && typeof c === "number" && c < 0) td.className = "neg";
         if (columns.includes(i)) td.classList.add("hl");
         tr.append(td);
       });

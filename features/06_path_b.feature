@@ -140,7 +140,6 @@ Feature: Path B – prepay the mortgage, then invest everything
       Given all rates are zero
       And the parameters:
         | loan amount           | 1 200 000 |
-        | property value        | 1 200 000 |
         | monthly installment   | 100 000   |
         | monthly extra savings | 50 000    |
         | prepayment share      | 40%      |
@@ -148,8 +147,8 @@ Feature: Path B – prepay the mortgage, then invest everything
       When I run the simulation
       Then the monthly results are:
         | month | loan B | invested B | investments B | net wealth B |
-        | 11    | 0      | 150 000    | 450 000       | 1 650 000    |
-        | 24    | 0      | 150 000    | 2 400 000     | 3 600 000    |
+        | 11    | 0      | 150 000    | 450 000       | 450 000      |
+        | 24    | 0      | 150 000    | 2 400 000     | 2 400 000    |
 
     Scenario: The user's case – prepaying all 150 000 pays off in year 11, month 10
       Year 12 is the first full mortgage-free year. The extra savings are 150 000 × 1.04^11 = 230 918.10,

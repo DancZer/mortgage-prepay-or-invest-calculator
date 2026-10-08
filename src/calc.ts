@@ -2,10 +2,6 @@
 export interface ModelInputs {
   /** Initial loan amount. */
   loan: number;
-  /** Property value at the start. */
-  property: number;
-  /** Annual property value growth, %. */
-  appr: number;
   /** Fixed monthly mortgage installment. */
   installment: number;
   /** Total monthly extra savings in year 1 (grows with `inf`). */
@@ -32,8 +28,6 @@ export interface MonthRow {
   extra: number;
   /** Path B's prepayment budget this month (0 for month 0). */
   prepay: number;
-  /** Property value at the end of the month. */
-  property: number;
   loanA: number;
   /** Money paid into the Path A investments this month (before returns). */
   contribA: number;
@@ -61,7 +55,7 @@ export interface SimResult {
  * In both paths, money the bank doesn't need in the payoff month is invested, and after payoff
  * the installment + full extra is invested every month.
  * Contributions are invested at the start of the month, then the month's return is applied.
- * Net wealth = property value + investments − remaining loan.
+ * Net wealth = investments − remaining loan (the home is left out: it is the same in both paths).
  *
  * All amounts are kept as integers in the currency's smallest unit (e.g. cents), so every
  * monthly interest, return and payment is rounded the way a bank statement would be.
@@ -87,29 +81,27 @@ export function simulate(p: ModelInputs): SimResult {
   let payoffMonthA: number | null = loanA === 0 ? 0 : null;
   let payoffMonthB: number | null = loanB === 0 ? 0 : null;
 
-  const row = (month: number, extra: number, prepay: number, property: number, contribA: number, contribB: number) => ({
+  const row = (month: number, extra: number, prepay: number, contribA: number, contribB: number) => ({
     month,
     extra: fromMinor(extra),
     prepay: fromMinor(prepay),
-    property: fromMinor(property),
     loanA: fromMinor(loanA),
     contribA: fromMinor(contribA),
     invA: fromMinor(invA),
-    netA: fromMinor(property + invA - loanA),
+    netA: fromMinor(invA - loanA),
     loanB: fromMinor(loanB),
     contribB: fromMinor(contribB),
     invB: fromMinor(invB),
-    netB: fromMinor(property + invB - loanB),
+    netB: fromMinor(invB - loanB),
   });
 
-  const rows: MonthRow[] = [row(0, 0, 0, toMinor(p.property), 0, 0)];
+  const rows: MonthRow[] = [row(0, 0, 0, 0, 0)];
 
   for (let m = 1; m <= totalMonths; m++) {
     const yearIndex = Math.floor((m - 1) / 12);
     const curExtra = toMinor(p.extra * Math.pow(1 + g, yearIndex));
     const curPrepay = Math.round(curExtra * share);
     const curInvExtra = curExtra - curPrepay;
-    const property = toMinor(p.property * Math.pow(1 + p.appr / 100, m / 12));
 
     // Path A
     let contribA: number;
@@ -151,7 +143,7 @@ export function simulate(p: ModelInputs): SimResult {
     invB += contribB;
     invB += Math.round(invB * ri);
 
-    rows.push(row(m, curExtra, curPrepay, property, contribA, contribB));
+    rows.push(row(m, curExtra, curPrepay, contribA, contribB));
   }
 
   return { rows, payoffMonthA, payoffMonthB };

@@ -289,8 +289,8 @@ export function payoffMarker(res: SimResult, lang: Language): { x: number; label
 
 /** Table columns (indexes into the header row) that belong to each path. */
 export const PATH_COLUMNS: Record<PathName, number[]> = {
-  A: [3, 6, 9], // Net wealth A, Loan A, Investments A
-  B: [4, 7, 8, 10], // Net wealth B, Loan B, Invested B (year), Investments B
+  A: [2, 5, 8], // Net wealth A, Loan A, Investments A
+  B: [3, 6, 7, 9], // Net wealth B, Loan B, Invested B (year), Investments B
 };
 
 export interface HighlightTargets {
@@ -315,7 +315,6 @@ export function highlightTargets(h: Highlight): HighlightTargets {
 export interface TableRow {
   year: number;
   extra: number;
-  property: number;
   netA: number;
   netB: number;
   diff: number;
@@ -337,7 +336,6 @@ export function yearlyTable(res: SimResult): TableRow[] {
       return {
         year,
         extra: r.extra,
-        property: r.property,
         netA: r.netA,
         netB: r.netB,
         diff: r.netB - r.netA,

@@ -14,10 +14,11 @@ Template: **Status**, **Context**, **Decision**, **Consequences**.
 | [0005](0005-prepayment-as-share.md)               | Prepayment is a share of the extra savings                                |
 | [0006](0006-currency-symbol-and-rounding.md)      | Currency changes symbol and rounding, not amounts                         |
 | [0007](0007-worst-and-best-case-returns.md)       | Worst-case and best-case returns, break-even and verdict                  |
-| [0008](0008-property-value-separate-from-loan.md) | Property value is separate from the loan and grows                        |
+| [0008](0008-property-value-separate-from-loan.md) | Property value is separate from the loan and grows (superseded by 0015)   |
 | [0009](0009-tool-neutral-specification.md)        | Requirements as Cucumber scenarios, tool-neutral agent instructions       |
 | [0010](0010-client-side-netlify.md)               | Client-side only, inputs in localStorage, hosted on Netlify               |
 | [0011](0011-typed-inputs-extend-sliders.md)       | Typed values; values above the maximum extend the slider                  |
 | [0012](0012-open-source-mit.md)                   | Open source under the MIT license                                         |
 | [0013](0013-languages.md)                         | Hungarian, Slovak, German and English; number format follows the language |
 | [0014](0014-zero-as-input.md)                     | Every input accepts 0                                                     |
+| [0015](0015-no-property-value.md)                 | The property value is not part of the model                               |

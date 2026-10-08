@@ -3,8 +3,6 @@ import { elapsedTime, installmentTooLow, simulate, toYearMonth, type ModelInputs
 
 const defaults: ModelInputs = {
   loan: 45_000_000,
-  property: 45_000_000,
-  appr: 0,
   installment: 300_000,
   extra: 150_000,
   prepayPct: 50,
@@ -67,8 +65,6 @@ describe("simulate", () => {
     // so 5,000 is invested, then 15,000/month. With no rates both end up equal.
     const { rows, payoffMonthA, payoffMonthB } = simulate({
       loan: 1_000_000,
-      property: 1_000_000,
-      appr: 0,
       installment: 10_000,
       extra: 5_000,
       prepayPct: 100,
@@ -81,8 +77,8 @@ describe("simulate", () => {
     });
     expect(payoffMonthA).toBe(100);
     expect(payoffMonthB).toBe(67);
-    expect(rows[120].netA).toBe(1_800_000);
-    expect(rows[120].netB).toBe(1_800_000);
+    expect(rows[120].netA).toBe(800_000);
+    expect(rows[120].netB).toBe(800_000);
     expect(rows[67].contribB).toBe(5_000);
     expect(rows[68].contribB).toBe(15_000);
   });
@@ -92,7 +88,7 @@ describe("simulate", () => {
       const { rows } = simulate({ ...defaults, decimals });
       const unit = Math.pow(10, decimals);
       for (const r of rows.slice(0, 50)) {
-        for (const v of [r.loanA, r.invA, r.loanB, r.invB, r.property]) {
+        for (const v of [r.loanA, r.invA, r.loanB, r.invB]) {
           expect(Math.abs(v * unit - Math.round(v * unit))).toBeLessThan(1e-6);
         }
       }

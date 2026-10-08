@@ -22,23 +22,6 @@ export interface ParamDef {
  */
 export const PARAMS: ParamDef[] = [
   {
-    key: "property",
-    min: 0,
-    max: 200_000_000,
-    step: 1_000_000,
-    defaultValue: 60_000_000,
-    unit: "money",
-  },
-  {
-    key: "appr",
-    min: 0,
-    max: 10,
-    step: 0.5,
-    defaultValue: 3,
-    unit: "percent",
-    decimals: 1,
-  },
-  {
     key: "loan",
     min: 0,
     max: 100_000_000,
