@@ -16,7 +16,10 @@
       <aside class="sidebar">
         <h1 id="title"></h1>
         <p class="lede" id="lede"></p>
-        <div class="segmented" id="currency" role="radiogroup"></div>
+        <div class="currency-row">
+          <div class="segmented" id="currency" role="radiogroup"></div>
+          <span class="help-slot" data-help-key="currency"></span>
+        </div>
         <div class="controls" id="controls"></div>
         <div class="sidebar-footer">
           <div class="segmented languages" id="language" role="radiogroup"></div>
@@ -29,15 +32,19 @@
 
         <section class="cards" id="cards"></section>
 
-        <p class="verdict" id="verdict"></p>
+        <div class="verdict">
+          <p id="verdict"></p>
+          <span class="help-slot" data-help-key="verdict"></span>
+        </div>
 
         <section class="panel chart-wrap">
+          <span class="help-slot corner" data-help-key="chart"></span>
           <canvas id="chart"></canvas>
         </section>
 
         <section class="panel table-panel">
           <div class="table-header">
-            <h2 id="table-title"></h2>
+            <h2><span id="table-title"></span><span class="help-slot" data-help-key="table"></span></h2>
             <div class="segmented" id="table-case" role="radiogroup"></div>
           </div>
           <div class="table-wrap">

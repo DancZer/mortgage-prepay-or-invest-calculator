@@ -84,6 +84,22 @@ export interface Strings {
   privacy: string;
   credits: { createdBy: (name: string) => string; version: (date: string) => string; license: string };
   labels: { language: string; currency: string; tableCase: string };
+  /** Explanations behind the "?" buttons (educational texts). */
+  help: {
+    /** Accessible name of a "?" button, e.g. "Explain: Loan amount". */
+    button: (subject: string) => string;
+    /** Names of the summary and the chart, used in the accessible names of their "?" buttons. */
+    subjects: { verdict: string; chart: string };
+    params: Record<NumericKey, string>;
+    netA: string;
+    netB: string;
+    difference: string;
+    mortgageFree: string;
+    verdict: string;
+    chart: string;
+    table: string;
+    currency: string;
+  };
 }
 
 const en: Strings = {
@@ -181,6 +197,45 @@ const en: Strings = {
   privacy: "Your inputs are saved only in this browser so they are still here next time. Nothing is sent to a server.",
   credits: { createdBy: (n) => `Created by ${n}`, version: (d) => `Version of ${d}`, license: "MIT License" },
   labels: { language: "Language", currency: "Currency", tableCase: "Scenario shown in the table" },
+  help: {
+    button: (s) => `Explain: ${s}`,
+    subjects: { verdict: "Summary", chart: "Chart" },
+    params: {
+      property:
+        "Today's market value of the home. It counts towards your net wealth in both paths, so it never decides which path wins.",
+      appr: "How much the home's value is expected to rise per year. It is the same in both paths, so it only changes the size of your net wealth, not the winner.",
+      loan: "The mortgage amount still owed today. Set it to 0 to see what happens without a mortgage.",
+      installment:
+        "The fixed monthly payment to the bank (interest + repayment). It stays the same until the loan is paid off; after that, both paths invest this amount every month.",
+      extra:
+        "Money you can set aside each month on top of the installment. Path A invests all of it; Path B uses part of it to prepay the mortgage.",
+      prepayPct:
+        "The share of your extra savings that Path B pays to the bank as early repayment. The rest is invested. 0% makes both paths the same.",
+      inf: "How much your monthly extra savings grow each year, for example with pay rises or inflation. The prepayment grows with them.",
+      invWorst:
+        "A cautious estimate of the yearly return on your investments, after costs. Real returns vary from year to year; this case shows what happens if markets disappoint.",
+      invBest:
+        "An optimistic estimate of the yearly return on your investments. Comparing both cases shows how much the result depends on the markets.",
+      mort: "The yearly interest rate of your mortgage. Every amount prepaid saves this interest, so prepaying works like a guaranteed return of the same size.",
+      penalty:
+        "A fee the bank charges on prepaid amounts, as a percentage. It makes prepaying more expensive and lowers the return at which investing wins.",
+      years: "How many years the comparison covers. Net wealth is compared at the end of this period.",
+    },
+    netA: "What Path A is worth at the end of the period: home value + investments − remaining loan, for the worst and the best investment return.",
+    netB: "The same for Path B, which prepays the mortgage with part of the savings and invests everything once the mortgage is paid off.",
+    difference:
+      "Path B minus Path A at the end. A positive amount (green) means prepaying came out ahead, a negative amount (blue) means investing did.",
+    mortgageFree:
+      "How long each path takes to repay the mortgage, and the month in which that happens if the loan starts this month.",
+    verdict:
+      "A plain-language summary. The break-even return is the yearly investment return at which both paths end equal: above it investing wins, below it prepaying wins.",
+    chart:
+      "Net wealth of both paths over time. Each shaded band runs from the worst to the best case. The red dashed line is Path B's remaining loan; the grey dashed line marks when it is paid off.",
+    table:
+      "End-of-year figures for the case selected above the table. The grey row is the year Path B becomes mortgage-free. Point at a value in the result cards to highlight a path here.",
+    currency:
+      "Changes only the currency symbol and the rounding (forint to whole units, euro and dollar to cents). Amounts are not converted.",
+  },
 };
 
 const hu: Strings = {
@@ -276,6 +331,45 @@ const hu: Strings = {
     "A megadott értékeket csak ez a böngésző tárolja, hogy legközelebb is meglegyenek. Semmilyen adatot nem küldünk szerverre.",
   credits: { createdBy: (n) => `Készítette: ${n}`, version: (d) => `Verzió: ${d}`, license: "MIT licenc" },
   labels: { language: "Nyelv", currency: "Pénznem", tableCase: "A táblázatban mutatott eset" },
+  help: {
+    button: (s) => `Magyarázat: ${s}`,
+    subjects: { verdict: "Összefoglaló", chart: "Grafikon" },
+    params: {
+      property:
+        "Az ingatlan mai piaci értéke. Mindkét változatban beleszámít a nettó vagyonba, ezért sosem dönti el, melyik nyer.",
+      appr: "Mennyivel nő várhatóan évente az ingatlan értéke. Mindkét változatban ugyanannyi, így csak a vagyon nagyságát változtatja, a győztest nem.",
+      loan: "A ma még fennálló hiteltartozás. Ha 0-ra állítja, látja, mi történik hitel nélkül.",
+      installment:
+        "A bankba fizetett fix havi összeg (kamat + tőketörlesztés). A hitel visszafizetéséig változatlan; utána mindkét változat ezt az összeget is befekteti havonta.",
+      extra:
+        "A törlesztőrészleten felül havonta félretehető pénz. Az A változat az egészet befekteti, a B változat egy részével előtörleszt.",
+      prepayPct:
+        "A többletmegtakarítás azon része, amelyet a B változat előtörlesztésre fordít. A maradékot befekteti. 0% esetén a két változat azonos.",
+      inf: "Mennyivel nő évente a havi többletmegtakarítás, például béremelés vagy infláció miatt. Az előtörlesztés is vele együtt nő.",
+      invWorst:
+        "Óvatos becslés a befektetések éves hozamára, költségek után. A valós hozam évről évre ingadozik; ez az eset azt mutatja, mi történik, ha a piac csalódást okoz.",
+      invBest:
+        "Optimista becslés a befektetések éves hozamára. A két eset összevetése megmutatja, mennyire függ az eredmény a piactól.",
+      mort: "A jelzáloghitel éves kamata. Minden előtörlesztett összeg ennyi kamatot takarít meg, így az előtörlesztés olyan, mint egy ugyanekkora garantált hozam.",
+      penalty:
+        "Az előtörlesztett összeg után fizetendő banki díj, százalékban. Drágábbá teszi az előtörlesztést, és csökkenti azt a hozamot, amely felett a befektetés nyer.",
+      years: "Hány évre szól az összehasonlítás. A nettó vagyonokat az időszak végén hasonlítjuk össze.",
+    },
+    netA: "Az A változat értéke az időszak végén: ingatlan + befektetések − fennmaradó hitel, a legrosszabb és a legjobb befektetési hozammal.",
+    netB: "Ugyanez a B változatra, amely a megtakarítás egy részével előtörleszt, majd a hitel visszafizetése után mindent befektet.",
+    difference:
+      "A B változat mínusz az A változat az időszak végén. A pozitív összeg (zöld) azt jelenti, hogy az előtörlesztés járt jobban, a negatív (kék), hogy a befektetés.",
+    mortgageFree:
+      "Mennyi idő alatt fizeti vissza a hitelt a két változat, és ez melyik hónapra esik, ha a hitel ebben a hónapban indul.",
+    verdict:
+      "Közérthető összefoglaló. A küszöbhozam az az éves befektetési hozam, amelynél a két változat egyformán végez: felette a befektetés, alatta az előtörlesztés nyer.",
+    chart:
+      "A két változat nettó vagyona az idő függvényében. A sávok a legrosszabb és a legjobb eset között húzódnak. A piros szaggatott vonal a B változat hátralévő hitele, a szürke szaggatott vonal a visszafizetés időpontját jelzi.",
+    table:
+      "Év végi adatok a táblázat felett kiválasztott esetre. A szürke sor az az év, amikor a B változat hitelmentessé válik. Ha az eredménykártyákon egy értékre mutat, itt kiemeljük az adott változatot.",
+    currency:
+      "Csak a pénznem jelét és a kerekítést változtatja (forintnál egész összegre, eurónál és dollárnál centre). Az összegeket nem váltja át.",
+  },
 };
 
 const sk: Strings = {
@@ -376,6 +470,44 @@ const sk: Strings = {
   privacy: "Zadané hodnoty sa ukladajú len v tomto prehliadači, aby tu boli aj nabudúce. Nič sa neodosiela na server.",
   credits: { createdBy: (n) => `Autor: ${n}`, version: (d) => `Verzia z ${d}`, license: "Licencia MIT" },
   labels: { language: "Jazyk", currency: "Mena", tableCase: "Prípad zobrazený v tabuľke" },
+  help: {
+    button: (s) => `Vysvetlenie: ${s}`,
+    subjects: { verdict: "Zhrnutie", chart: "Graf" },
+    params: {
+      property:
+        "Dnešná trhová hodnota nehnuteľnosti. V oboch variantoch sa započítava do čistého majetku, preto nikdy nerozhoduje o víťazovi.",
+      appr: "O koľko má hodnota nehnuteľnosti ročne rásť. V oboch variantoch je rovnaká, mení teda len výšku majetku, nie víťaza.",
+      loan: "Výška úveru, ktorú dnes ešte dlhujete. Pri hodnote 0 uvidíte, čo sa stane bez hypotéky.",
+      installment:
+        "Pevná mesačná platba banke (úrok + splátka istiny). Platí do splatenia úveru; potom obe varianty investujú každý mesiac aj túto sumu.",
+      extra:
+        "Peniaze, ktoré si môžete mesačne odložiť navyše k splátke. Variant A ich celé investuje, variant B časťou z nich predčasne spláca hypotéku.",
+      prepayPct:
+        "Podiel dodatočných úspor, ktorý variant B použije na predčasnú splátku. Zvyšok investuje. Pri 0 % sú obe varianty rovnaké.",
+      inf: "O koľko ročne rastú vaše mesačné dodatočné úspory, napríklad vďaka rastu mzdy alebo inflácii. Predčasná splátka rastie spolu s nimi.",
+      invWorst:
+        "Opatrný odhad ročného výnosu investícií po nákladoch. Skutočné výnosy kolíšu z roka na rok; tento prípad ukazuje, čo sa stane, ak trhy sklamú.",
+      invBest:
+        "Optimistický odhad ročného výnosu investícií. Porovnanie oboch prípadov ukazuje, ako veľmi výsledok závisí od trhov.",
+      mort: "Ročná úroková sadzba hypotéky. Každá predčasne splatená suma ušetrí tento úrok, takže predčasné splácanie funguje ako garantovaný výnos v rovnakej výške.",
+      penalty:
+        "Poplatok banky z predčasne splatenej sumy, v percentách. Predčasné splácanie zdražuje a znižuje výnos, nad ktorým vyhráva investovanie.",
+      years: "Koľko rokov porovnanie pokrýva. Čistý majetok sa porovnáva na konci tohto obdobia.",
+    },
+    netA: "Hodnota variantu A na konci obdobia: nehnuteľnosť + investície − zostávajúci úver, pre najhorší aj najlepší výnos investícií.",
+    netB: "To isté pre variant B, ktorý časťou úspor predčasne spláca hypotéku a po jej splatení investuje všetko.",
+    difference:
+      "Variant B mínus variant A na konci obdobia. Kladná suma (zelená) znamená, že lepšie vyšlo predčasné splácanie, záporná (modrá), že investovanie.",
+    mortgageFree: "Za aký čas každý variant splatí hypotéku a v ktorom mesiaci to bude, ak úver začína tento mesiac.",
+    verdict:
+      "Zrozumiteľné zhrnutie. Hraničný výnos je ročný výnos investícií, pri ktorom oba varianty skončia rovnako: nad ním vyhráva investovanie, pod ním predčasné splácanie.",
+    chart:
+      "Čistý majetok oboch variantov v čase. Pásma siahajú od najhoršieho po najlepší prípad. Červená prerušovaná čiara je zostávajúci úver variantu B, sivá prerušovaná čiara označuje jeho splatenie.",
+    table:
+      "Údaje ku koncu roka pre prípad zvolený nad tabuľkou. Sivý riadok je rok, keď je variant B bez hypotéky. Ak na kartách výsledkov ukážete na hodnotu, variant sa tu zvýrazní.",
+    currency:
+      "Mení len symbol meny a zaokrúhľovanie (forint na celé jednotky, euro a dolár na centy). Sumy sa neprepočítavajú.",
+  },
 };
 
 const de: Strings = {
@@ -475,6 +607,45 @@ const de: Strings = {
     "Ihre Eingaben werden nur in diesem Browser gespeichert, damit sie beim nächsten Mal noch da sind. Es wird nichts an einen Server gesendet.",
   credits: { createdBy: (n) => `Erstellt von ${n}`, version: (d) => `Version vom ${d}`, license: "MIT-Lizenz" },
   labels: { language: "Sprache", currency: "Währung", tableCase: "In der Tabelle gezeigter Fall" },
+  help: {
+    button: (s) => `Erklärung: ${s}`,
+    subjects: { verdict: "Zusammenfassung", chart: "Diagramm" },
+    params: {
+      property:
+        "Der heutige Marktwert der Immobilie. Er zählt in beiden Varianten zum Nettovermögen und entscheidet daher nie, welche gewinnt.",
+      appr: "Wie stark der Wert der Immobilie voraussichtlich pro Jahr steigt. Er ist in beiden Varianten gleich und ändert nur die Höhe des Vermögens, nicht den Gewinner.",
+      loan: "Der heute noch offene Darlehensbetrag. Mit 0 sehen Sie, was ohne Hypothek passiert.",
+      installment:
+        "Die feste monatliche Zahlung an die Bank (Zinsen + Tilgung). Sie bleibt bis zur vollständigen Rückzahlung gleich; danach investieren beide Varianten auch diesen Betrag jeden Monat.",
+      extra:
+        "Geld, das Sie monatlich zusätzlich zur Rate zurücklegen können. Variante A investiert alles, Variante B tilgt mit einem Teil davon vorzeitig.",
+      prepayPct:
+        "Der Anteil der Zusatzersparnis, den Variante B als Sondertilgung an die Bank zahlt. Der Rest wird investiert. Bei 0 % sind beide Varianten gleich.",
+      inf: "Um wie viel Ihre monatliche Zusatzersparnis jährlich wächst, zum Beispiel durch Gehaltserhöhungen oder Inflation. Die Sondertilgung wächst mit.",
+      invWorst:
+        "Eine vorsichtige Schätzung der jährlichen Rendite Ihrer Anlagen nach Kosten. Echte Renditen schwanken von Jahr zu Jahr; dieser Fall zeigt, was passiert, wenn die Märkte enttäuschen.",
+      invBest:
+        "Eine optimistische Schätzung der jährlichen Rendite Ihrer Anlagen. Der Vergleich beider Fälle zeigt, wie stark das Ergebnis von den Märkten abhängt.",
+      mort: "Der jährliche Zinssatz Ihrer Hypothek. Jeder vorzeitig getilgte Betrag spart diesen Zins – die Sondertilgung wirkt wie eine garantierte Rendite in gleicher Höhe.",
+      penalty:
+        "Eine Gebühr der Bank auf vorzeitig getilgte Beträge, in Prozent. Sie verteuert die Sondertilgung und senkt die Rendite, ab der Investieren gewinnt.",
+      years: "Wie viele Jahre der Vergleich umfasst. Das Nettovermögen wird am Ende dieses Zeitraums verglichen.",
+    },
+    netA: "Was Variante A am Ende wert ist: Immobilie + Anlagen − Restschuld, für die ungünstige und die günstige Rendite.",
+    netB: "Dasselbe für Variante B, die mit einem Teil der Ersparnis vorzeitig tilgt und nach der Rückzahlung alles investiert.",
+    difference:
+      "Variante B minus Variante A am Ende. Ein positiver Betrag (grün) bedeutet, dass die Sondertilgung vorn liegt, ein negativer (blau), dass das Investieren vorn liegt.",
+    mortgageFree:
+      "Wie lange jede Variante bis zur vollständigen Rückzahlung braucht und in welchem Monat das ist, wenn das Darlehen diesen Monat beginnt.",
+    verdict:
+      "Eine verständliche Zusammenfassung. Die Break-even-Rendite ist die jährliche Rendite, bei der beide Varianten gleich enden: darüber gewinnt das Investieren, darunter die Sondertilgung.",
+    chart:
+      "Das Nettovermögen beider Varianten im Zeitverlauf. Die Bänder reichen vom ungünstigen bis zum günstigen Fall. Die rote gestrichelte Linie ist die Restschuld von Variante B, die graue gestrichelte Linie markiert ihre Rückzahlung.",
+    table:
+      "Werte zum Jahresende für den über der Tabelle gewählten Fall. Die graue Zeile ist das Jahr, in dem Variante B schuldenfrei wird. Zeigen Sie auf einen Wert in den Ergebniskarten, um hier eine Variante hervorzuheben.",
+    currency:
+      "Ändert nur das Währungssymbol und die Rundung (Forint auf ganze Einheiten, Euro und Dollar auf Cent). Beträge werden nicht umgerechnet.",
+  },
 };
 
 export const STRINGS: Record<Language, Strings> = { hu, sk, de, en };

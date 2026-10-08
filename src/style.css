@@ -109,9 +109,15 @@ h1 {
 }
 
 /* Label and input field on one row; the slider spans the full width below them. */
-.slider-label {
+.slider-head {
   grid-row: 1;
   grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slider-label {
   color: var(--muted);
 }
 
@@ -236,6 +242,9 @@ main > * {
 }
 
 .verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   margin: 0;
   padding: 14px 16px;
   background: var(--surface);
@@ -255,6 +264,9 @@ main > * {
 }
 
 .table-header h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   font-size: 1rem;
 }
@@ -286,6 +298,7 @@ main > * {
 }
 
 .chart-wrap {
+  position: relative;
   height: 420px;
 }
 
@@ -451,4 +464,80 @@ td.neg {
 thead[data-hl] th.hl,
 thead th.hl {
   color: var(--text);
+}
+
+.verdict p {
+  flex: 1;
+  margin: 0;
+}
+
+.currency-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.currency-row .segmented {
+  margin-bottom: 0;
+}
+
+/* "?" explanation buttons: a small circle with a larger invisible hit area (about 36 px). */
+.help {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font:
+    700 0.75rem/1 system-ui,
+    sans-serif;
+  vertical-align: middle;
+  cursor: help;
+}
+
+.help::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.help:hover,
+.help:focus-visible,
+.help[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  outline: none;
+}
+
+.help-slot.corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}
+
+.card-title .help {
+  margin-left: 2px;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 1000;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1c2430;
+  color: #fff;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
 }

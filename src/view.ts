@@ -2,7 +2,7 @@ import { AUTHOR, AUTHOR_URL, COPYRIGHT_YEAR, LICENSE_URL } from "./about";
 import { elapsedTime, installmentTooLow, toYearMonth, type MonthRow, type SimResult } from "./calc";
 import { formatMoney, type CurrencyCode } from "./currency";
 import { STRINGS, type Language } from "./i18n";
-import type { ParamDef, TypedError } from "./params";
+import type { NumericKey, ParamDef, TypedError } from "./params";
 import { BREAK_EVEN_MAX, BREAK_EVEN_MIN, type AppInputs, type BreakEven, type Case, type Scenarios } from "./scenarios";
 
 const locale = (lang: Language) => STRINGS[lang].locale;
@@ -121,7 +121,19 @@ export interface Highlight {
   scenario: Case;
 }
 
+/** What a "?" button explains: an input, a result card, the verdict, the chart, the table or the currency switch. */
+export type HelpKey =
+  NumericKey | "netA" | "netB" | "difference" | "mortgageFree" | "verdict" | "chart" | "table" | "currency";
+
+/** The explanation shown behind a "?" button. */
+export function helpText(key: HelpKey, lang: Language): string {
+  const help = STRINGS[lang].help;
+  return key in help.params ? help.params[key as NumericKey] : help[key as Exclude<HelpKey, NumericKey>];
+}
+
 export interface Card {
+  /** Explanation behind the card's "?" button. */
+  help: HelpKey;
   title: string;
   lines: CardLine[];
   notes: string[];
@@ -163,9 +175,10 @@ export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language, start:
   // The loan does not depend on the investment return, so either scenario gives the payoff dates.
   const { payoffMonthA, payoffMonthB } = sc.worst;
   return [
-    { title: t.netA, lines: caseLines("netA"), notes: [], tone: "a" },
-    { title: t.netB, lines: caseLines("netB"), notes: [], tone: "b" },
+    { help: "netA", title: t.netA, lines: caseLines("netA"), notes: [], tone: "a" },
+    { help: "netB", title: t.netB, lines: caseLines("netB"), notes: [], tone: "b" },
     {
+      help: "difference",
       title: t.difference,
       lines: (["worst", "best"] as Case[]).map((c) => {
         const diff = final(sc[c]).netB - final(sc[c]).netA;
@@ -179,6 +192,7 @@ export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language, start:
       notes: [],
     },
     {
+      help: "mortgageFree",
       title: t.mortgageFree,
       lines: (
         [

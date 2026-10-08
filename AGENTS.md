@@ -46,6 +46,7 @@ Static single-page app, no backend. Everything runs in the browser; inputs are k
 | `src/i18n.ts`      | All user-visible texts in hu/sk/de/en, language detection, reading typed numbers per language.                                                                                           |
 | `src/about.ts`     | Author, GitHub link, copyright year and license link shown in the credits.                                                                                                               |
 | `src/view.ts`      | Pure display logic: cards, verdict, chart series, payoff marker, yearly table, texts.                                                                                                    |
+| `src/tooltip.ts`   | The "?" explanation buttons and their shared tooltip (hover, tap, keyboard).                                                                                                             |
 | `src/main.ts`      | DOM and Chart.js wiring only. No logic the scenarios cannot reach.                                                                                                                       |
 | `features/`        | Scenarios, step definitions (`step_definitions/`), test world (`support/`).                                                                                                              |
 
@@ -67,6 +68,8 @@ deploy if it fails.
 
 ## Rules
 
+- **Explanations:** the app is educational. Every input, result card and panel has a "?" button
+  with an explanation in `help` in `src/i18n.ts` (all four languages); add one for anything new.
 - **Texts:** never hard-code a user-visible text. Add it to every language in `src/i18n.ts`; the
   scenario "No language is missing a text" fails otherwise. Translations should be checked by native speakers.
 - **Dependency licenses:** only permissively licensed packages, so the project stays MIT and anyone may reuse it. Runtime: MIT,

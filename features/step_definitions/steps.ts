@@ -15,6 +15,7 @@ import {
   describeInputError,
   credits,
   formatParam,
+  helpText,
   highlightTargets,
   money,
   payoffMarker,
@@ -22,6 +23,7 @@ import {
   verdict,
   warningMessage,
   yearlyTable,
+  type HelpKey,
   type StartMonth,
   type TableRow,
 } from "../../src/view";
@@ -660,4 +662,52 @@ Then("the {string} card has no notes", function (this: SimWorld, title: string) 
   const card = cards(this).find((c) => c.title === title);
   assert.ok(card, `no card titled "${title}"`);
   assert.deepEqual(card.notes, []);
+});
+
+// ---------- Explanations ----------
+
+const HELP_KEYS: HelpKey[] = [
+  ...PARAMS.map((p) => p.key),
+  "netA",
+  "netB",
+  "difference",
+  "mortgageFree",
+  "verdict",
+  "chart",
+  "table",
+  "currency",
+];
+
+Then(
+  "every input, result card, the summary, the chart, the table and the currency switch have an explanation",
+  function (this: SimWorld) {
+    for (const key of HELP_KEYS) {
+      const text = helpText(key, this.lang);
+      assert.ok(typeof text === "string" && text.trim().length > 0, `${this.lang}: no explanation for ${key}`);
+    }
+  },
+);
+
+Then("all explanations are different from each other and longer than their label", function (this: SimWorld) {
+  const texts = HELP_KEYS.map((key) => helpText(key, this.lang));
+  assert.equal(new Set(texts).size, texts.length, `${this.lang}: two explanations are identical`);
+  for (const def of PARAMS) {
+    const label = STRINGS[this.lang].params[def.key];
+    assert.ok(helpText(def.key, this.lang).length > label.length * 2, `${this.lang}: ${def.key} explanation too short`);
+  }
+});
+
+Then("the cards have these explanations:", function (this: SimWorld, table: DataTable) {
+  assert.deepEqual(
+    cards(this).map((c) => [c.title, c.help]),
+    table.raw().map(([title, key]) => [title, key]),
+  );
+});
+
+Then(/^the explanation of the (.+) is:$/, function (this: SimWorld, name: string, text: string) {
+  assert.equal(helpText(paramKey(name), this.lang), normalize(text));
+});
+
+Then(/^the "\?" button of the (.+) is announced as "(.+)"$/, function (this: SimWorld, name: string, label: string) {
+  assert.equal(STRINGS[this.lang].help.button(STRINGS[this.lang].params[paramKey(name)]), label);
 });

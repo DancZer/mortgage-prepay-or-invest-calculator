@@ -14,6 +14,7 @@ import { LANGUAGES, STRINGS, type Language } from "./i18n";
 import { applyInput, applyTypedValue, initialMaxes, PARAMS, type Maxes, type NumericKey } from "./params";
 import { breakEvenReturn, runScenarios, type AppInputs, type Case, type Scenarios } from "./scenarios";
 import { browserStore, loadInputs, loadLanguage, saveInputs, saveLanguage } from "./storage";
+import { closeTooltipIfDetached, helpButton, initTooltips, setHelp } from "./tooltip";
 import {
   chartSeries,
   credits,
@@ -22,6 +23,7 @@ import {
   fmtMillions,
   formatInputValue,
   formatParam,
+  helpText,
   highlightTargets,
   inputHint,
   money,
@@ -34,6 +36,7 @@ import {
   verdict,
   warningMessage,
   yearlyTable,
+  type HelpKey,
   type Highlight,
   type PathName,
 } from "./view";
@@ -56,6 +59,14 @@ const tbodyEl = $<HTMLTableSectionElement>("#table tbody");
 const canvasEl = $<HTMLCanvasElement>("#chart");
 
 const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+
+initTooltips();
+
+/** Markup of a "?" button for parts rendered as HTML strings (the result cards). */
+const helpMarkup = (key: HelpKey, subject: string) =>
+  `<button type="button" class="help" aria-expanded="false" data-help="${escapeHtml(helpText(key, lang))}" aria-label="${escapeHtml(
+    STRINGS[lang].help.button(subject),
+  )}">?</button>`;
 
 /** Builds a row of toggle buttons; `onSelect` receives the chosen value. */
 function segmented<T extends string>(
@@ -96,6 +107,7 @@ segmented(
 
 interface SliderEls {
   label: HTMLLabelElement;
+  help: HTMLButtonElement;
   range: HTMLInputElement;
   field: HTMLInputElement;
   unit: HTMLElement;
@@ -116,7 +128,7 @@ for (const def of PARAMS) {
   const row = document.createElement("div");
   row.className = "slider";
   row.innerHTML = `
-    <label class="slider-label" for="${id}"></label>
+    <span class="slider-head"><label class="slider-label" for="${id}"></label></span>
     <span class="field">
       <input id="${id}" class="num" type="text" inputmode="decimal" autocomplete="off" aria-describedby="${id}-error" />
       <span class="unit"></span>
@@ -124,8 +136,11 @@ for (const def of PARAMS) {
     <input class="range" type="range" min="${def.min}" step="${def.step}" />
     <small class="hint"></small>
     <small class="error" id="${id}-error" role="alert" hidden></small>`;
+  const help = helpButton();
+  row.querySelector(".slider-head")!.append(help);
   const els: SliderEls = {
     label: row.querySelector(".slider-label")!,
+    help,
     range: row.querySelector(".range")!,
     field: row.querySelector(".num")!,
     unit: row.querySelector(".unit")!,
@@ -163,6 +178,7 @@ function syncSliders() {
     const els = sliderEls.get(def.key)!;
     const value = inputs[def.key];
     els.label.textContent = STRINGS[lang].params[def.key];
+    setHelp(els.help, helpText(def.key, lang), STRINGS[lang].help.button(STRINGS[lang].params[def.key]));
     els.range.setAttribute("aria-label", STRINGS[lang].params[def.key]);
     els.range.max = String(maxes[def.key]);
     els.range.value = String(value);
@@ -197,6 +213,18 @@ function renderTexts() {
       return th;
     }),
   );
+  // "?" buttons of the currency switch, verdict, chart and table (created once, texts per language).
+  const subjects: Record<string, string> = {
+    currency: t.labels.currency,
+    verdict: t.help.subjects.verdict,
+    chart: t.help.subjects.chart,
+    table: t.table.title,
+  };
+  document.querySelectorAll<HTMLElement>(".help-slot[data-help-key]").forEach((slot) => {
+    const key = slot.dataset.helpKey as HelpKey;
+    const button = slot.querySelector<HTMLButtonElement>("button.help") ?? slot.appendChild(helpButton());
+    setHelp(button, helpText(key, lang), t.help.button(subjects[key]));
+  });
   $("#disclaimer").textContent = t.disclaimer;
   $("#privacy").textContent = t.privacy;
 
@@ -312,7 +340,7 @@ function renderCards(sc: Scenarios) {
     .map(
       (c) => `
     <div class="card">
-      <span>${escapeHtml(c.title)}</span>
+      <span class="card-title">${escapeHtml(c.title)} ${helpMarkup(c.help, c.title)}</span>
       ${c.lines
         .map(
           (l) =>
@@ -425,6 +453,7 @@ function update() {
 
   renderCards(sc);
   renderTable(sc);
+  closeTooltipIfDetached();
 }
 
 renderTexts();
