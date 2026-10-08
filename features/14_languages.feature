@@ -73,19 +73,20 @@ Feature: Languages and credits
         | German    | 6,18 % |
         | English   | 6.18%  |
 
-    Scenario Outline: Payoff dates and elapsed time
+    Scenario Outline: Time until payoff and its calendar month
       Given the language is <language>
-      Then a payoff in month <month> is shown as "<date>" and "<elapsed>"
+      Then a payoff in month <month> of a loan starting in October 2026 is shown as "<time>" in "<date>"
 
       Examples:
-        | language  | month | date                | elapsed                   |
-        | Hungarian | 130   | 11. év, 10. hónap   | 10 év 10 hónap után       |
-        | Hungarian | 13    | 2. év, 1. hónap     | 1 év 1 hónap után         |
-        | Slovak    | 130   | 11. rok, 10. mesiac | po 10 rokoch 10 mesiacoch |
-        | Slovak    | 13    | 2. rok, 1. mesiac   | po 1 roku 1 mesiaci       |
-        | German    | 130   | Jahr 11, Monat 10   | nach 10 Jahren 10 Monaten |
-        | German    | 13    | Jahr 2, Monat 1     | nach 1 Jahr 1 Monat       |
-        | German    | 12    | Jahr 1, Monat 12    | nach 1 Jahr               |
+        | language  | month | time                 | date           |
+        | Hungarian | 130   | 10 év 10 hónap       | 2037. július   |
+        | Hungarian | 13    | 1 év 1 hónap         | 2027. október  |
+        | Slovak    | 130   | 10 rokov 10 mesiacov | júl 2037       |
+        | Slovak    | 13    | 1 rok 1 mesiac       | október 2027   |
+        | Slovak    | 27    | 2 roky 3 mesiace     | december 2028  |
+        | German    | 130   | 10 Jahre 10 Monate   | Juli 2037      |
+        | German    | 13    | 1 Jahr 1 Monat       | Oktober 2027   |
+        | German    | 12    | 1 Jahr               | September 2027 |
 
   Rule: Typed numbers are read the way the language writes them
     Spaces are always ignored. The other decimal mark is also accepted when it cannot be a

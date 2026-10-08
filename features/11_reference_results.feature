@@ -20,4 +20,7 @@ Feature: Reference results for the default parameters
     And the difference is shown in the colour of the path that is ahead:
       | worst case | Path B |
       | best case  | Path A |
-    And the "Path B mortgage-free" card shows "Year 15, month 6"
+    And the mortgage-free card shows, for a loan starting in October 2026:
+      | path | time              | date         |
+      | A    | 24 years 1 month  | October 2050 |
+      | B    | 14 years 6 months | March 2041   |

@@ -78,11 +78,29 @@ export function describePayoff(month: number | null, lang: Language): string {
   return STRINGS[lang].payoffDate(ym.year, ym.month);
 }
 
-/** "after 10 years 10 months" in the chosen language; empty when there is no payoff. */
-export function describeElapsed(month: number | null, lang: Language): string {
-  if (month === null || month === 0) return "";
+/** "14 years 6 months": the time until the end of a 1-based month, in the chosen language. */
+export function describeDuration(month: number, lang: Language): string {
   const { years, months } = elapsedTime(month);
-  return STRINGS[lang].elapsed(years, months);
+  return STRINGS[lang].duration(years, months);
+}
+
+/** Calendar month in which the loan starts (month 1 of the simulation); `month` is 1–12. */
+export interface StartMonth {
+  year: number;
+  month: number;
+}
+
+export function startMonthOf(date: Date): StartMonth {
+  return { year: date.getFullYear(), month: date.getMonth() + 1 };
+}
+
+/** Calendar month of simulation month `month` (1-based), e.g. "March 2041" or "2041. március". */
+export function calendarMonth(month: number, start: StartMonth, lang: Language): string {
+  return new Date(Date.UTC(start.year, start.month - 1 + month - 1, 1)).toLocaleDateString(locale(lang), {
+    year: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  });
 }
 
 const final = (res: SimResult) => res.rows[res.rows.length - 1];
@@ -94,6 +112,10 @@ export interface CardLine {
   tone?: "a" | "b";
   /** Path and case to highlight in the chart and table while this value is hovered or focused. */
   highlight?: Highlight;
+  /** Shown after the value in brackets, on the same line (e.g. a calendar date). */
+  detail?: string;
+  /** Label, value and detail on one line instead of the label above the value. */
+  inline?: boolean;
 }
 
 export type PathName = "A" | "B";
@@ -125,7 +147,7 @@ export function describeBreakEven(be: BreakEven, lang: Language): string {
   }
 }
 
-export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language): Card[] {
+export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language, start: StartMonth): Card[] {
   const t = STRINGS[lang].cards;
   const caseLines = (key: "netA" | "netB") => {
     const path: PathName = key === "netA" ? "A" : "B";
@@ -162,8 +184,20 @@ export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language): Card[
     },
     {
       title: t.mortgageFree,
-      lines: [{ label: "", value: describePayoff(payoffMonthB, lang) }],
-      notes: [describeElapsed(payoffMonthB, lang), t.pathAPayoff(describePayoff(payoffMonthA, lang))].filter(Boolean),
+      lines: (
+        [
+          ["A", payoffMonthA],
+          ["B", payoffMonthB],
+        ] as const
+      ).map(([path, month]) => ({
+        label: `${path === "A" ? STRINGS[lang].pathA : STRINGS[lang].pathB}:`,
+        // A payoff month 0 means there is no loan; null means not paid off within the horizon.
+        value: month ? describeDuration(month, lang) : describePayoff(month, lang),
+        detail: month ? calendarMonth(month, start, lang) : undefined,
+        tone: path === "A" ? ("a" as const) : ("b" as const),
+        inline: true,
+      })),
+      notes: [],
     },
   ];
 }

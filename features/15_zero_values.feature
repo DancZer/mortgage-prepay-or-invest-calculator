@@ -30,9 +30,10 @@ Feature: Zero as an input
     And the parameters:
       | loan amount | 0 |
     When I run the simulation
-    Then the "Path B mortgage-free" card shows "No mortgage"
-    And the "Path B mortgage-free" card notes:
-      | Path A: No mortgage |
+    Then the mortgage-free card shows, for a loan starting in October 2026:
+      | path | time        | date |
+      | A    | No mortgage |      |
+      | B    | No mortgage |      |
     And from month 1 to month 300 Path A invests the monthly installment plus that month's extra savings
     And from month 1 to month 300 Path B invests the monthly installment plus that month's extra savings
     And Path B investments equal Path A investments up to month 300
@@ -112,7 +113,10 @@ Feature: Zero as an input
       | path | worst case    | best case     |
       | A    | Ft 15,000,000 | Ft 15,000,000 |
       | B    | Ft 15,000,000 | Ft 15,000,000 |
-    And the "Path B mortgage-free" card shows "Not within horizon"
+    And the mortgage-free card shows, for a loan starting in October 2026:
+      | path | time               | date |
+      | A    | Not within horizon |      |
+      | B    | Not within horizon |      |
     And the break-even return is "—"
     And the verdict is:
       """

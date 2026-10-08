@@ -10,9 +10,9 @@ import { loadInputs, loadLanguage, saveInputs, saveLanguage, STORAGE_KEY } from 
 import {
   chartSeries,
   describeBreakEven,
-  describeElapsed,
+  calendarMonth,
+  describeDuration,
   describeInputError,
-  describePayoff,
   credits,
   formatParam,
   highlightTargets,
@@ -22,6 +22,7 @@ import {
   verdict,
   warningMessage,
   yearlyTable,
+  type StartMonth,
   type TableRow,
 } from "../../src/view";
 import { assertAmount, normalize, paramKey, parameterChange, parseNumber, ungroup } from "../support/parse";
@@ -330,7 +331,7 @@ Then("the verdict starts with {string}", function (this: SimWorld, start: string
 
 // ---------- Dashboard ----------
 
-const cards = (w: SimWorld) => summaryCards(w.inputs, w.scenarios, w.lang);
+const cards = (w: SimWorld) => summaryCards(w.inputs, w.scenarios, w.lang, w.start);
 
 Then("the final net wealth is:", function (this: SimWorld, table: DataTable) {
   for (const row of table.hashes()) {
@@ -363,11 +364,52 @@ Then("the {string} card notes:", function (this: SimWorld, title: string, table:
   );
 });
 
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+/** "October 2026" → the loan's start month. */
+function parseStart(text: string): StartMonth {
+  const [name, year] = text.trim().split(" ");
+  const month = MONTHS.indexOf(name) + 1;
+  assert.ok(month > 0 && Number(year) > 0, `not a month and year: ${text}`);
+  return { year: Number(year), month };
+}
+
 Then(
-  "a payoff in month {int} is shown as {string} and {string}",
-  function (this: SimWorld, month: number, date: string, elapsed: string) {
-    assert.equal(describePayoff(month, this.lang), date);
-    assert.equal(describeElapsed(month, this.lang), elapsed);
+  /^a payoff in month (\d+) of a loan starting in (\w+ \d{4}) is shown as "(.*)" in "(.*)"$/,
+  function (this: SimWorld, month: string, start: string, time: string, date: string) {
+    assert.equal(describeDuration(Number(month), this.lang), time);
+    assert.equal(calendarMonth(Number(month), parseStart(start), this.lang), date);
+  },
+);
+
+Then(
+  /^the mortgage-free card shows, for a loan starting in (\w+ \d{4}):$/,
+  function (this: SimWorld, start: string, table: DataTable) {
+    this.start = parseStart(start);
+    const card = cards(this)[3];
+    assert.equal(card.title, STRINGS[this.lang].cards.mortgageFree);
+    const rows = table.hashes();
+    assert.equal(card.lines.length, rows.length, "number of lines");
+    rows.forEach((row, i) => {
+      const line = card.lines[i];
+      const pathName = row.path === "A" ? STRINGS[this.lang].pathA : STRINGS[this.lang].pathB;
+      assert.equal(line.label, `${pathName}:`, `line ${i + 1} label`);
+      assert.equal(line.value, row.time, `Path ${row.path} time`);
+      assert.equal(line.detail ?? "", row.date, `Path ${row.path} date`);
+    });
   },
 );
 

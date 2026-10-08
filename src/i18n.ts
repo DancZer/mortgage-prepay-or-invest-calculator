@@ -48,7 +48,6 @@ export interface Strings {
     mortgageFree: string;
     worstCase: (rate: string) => string;
     bestCase: (rate: string) => string;
-    pathAPayoff: (date: string) => string;
     /** Break-even return outside the searched range (used in descriptions of the break-even return). */
     below: (rate: string) => string;
     above: (rate: string) => string;
@@ -57,7 +56,8 @@ export interface Strings {
   notWithinHorizon: string;
   /** Shown instead of a payoff date when the loan amount is 0. */
   noMortgage: string;
-  elapsed: (years: number, months: number) => string;
+  /** A length of time, e.g. "14 years 6 months" (months ≥ 1 in total). */
+  duration: (years: number, months: number) => string;
   verdict: {
     identical: string;
     bothTie: string;
@@ -117,18 +117,16 @@ const en: Strings = {
     netA: "Path A final net wealth",
     netB: "Path B final net wealth",
     difference: "Difference B − A",
-    mortgageFree: "Path B mortgage-free",
+    mortgageFree: "Mortgage-free",
     worstCase: (r) => `Worst case (${r})`,
     bestCase: (r) => `Best case (${r})`,
-    pathAPayoff: (d) => `Path A: ${d}`,
     below: (r) => `Below ${r}`,
     above: (r) => `Above ${r}`,
   },
   payoffDate: (y, m) => `Year ${y}, month ${m}`,
   notWithinHorizon: "Not within horizon",
   noMortgage: "No mortgage",
-  elapsed: (y, m) =>
-    "after " +
+  duration: (y, m) =>
     [y > 0 ? `${y} ${y === 1 ? "year" : "years"}` : "", m > 0 ? `${m} ${m === 1 ? "month" : "months"}` : ""]
       .filter(Boolean)
       .join(" "),
@@ -216,17 +214,16 @@ const hu: Strings = {
     netA: "A változat végső nettó vagyona",
     netB: "B változat végső nettó vagyona",
     difference: "Különbség (B − A)",
-    mortgageFree: "B változat hitelmentes",
+    mortgageFree: "Hitelmentes",
     worstCase: (r) => `Legrosszabb eset (${r})`,
     bestCase: (r) => `Legjobb eset (${r})`,
-    pathAPayoff: (d) => `A változat: ${d}`,
     below: (r) => `${r} alatt`,
     above: (r) => `${r} felett`,
   },
   payoffDate: (y, m) => `${y}. év, ${m}. hónap`,
   notWithinHorizon: "Az időtávon belül nem",
   noMortgage: "Nincs hitel",
-  elapsed: (y, m) => [y > 0 ? `${y} év` : "", m > 0 ? `${m} hónap` : ""].filter(Boolean).join(" ") + " után",
+  duration: (y, m) => [y > 0 ? `${y} év` : "", m > 0 ? `${m} hónap` : ""].filter(Boolean).join(" "),
   verdict: {
     identical: "Az időtávon belül nincs előtörlesztés, így a két stratégia eredménye azonos.",
     bothTie: "A két stratégia mindkét esetben azonos eredményt ad.",
@@ -312,21 +309,22 @@ const sk: Strings = {
     netA: "Konečný čistý majetok – variant A",
     netB: "Konečný čistý majetok – variant B",
     difference: "Rozdiel (B − A)",
-    mortgageFree: "Variant B bez hypotéky",
+    mortgageFree: "Bez dlhu",
     worstCase: (r) => `Najhorší prípad (${r})`,
     bestCase: (r) => `Najlepší prípad (${r})`,
-    pathAPayoff: (d) => `Variant A: ${d}`,
     below: (r) => `Pod ${r}`,
     above: (r) => `Nad ${r}`,
   },
   payoffDate: (y, m) => `${y}. rok, ${m}. mesiac`,
   notWithinHorizon: "Nie v rámci horizontu",
   noMortgage: "Bez hypotéky",
-  elapsed: (y, m) =>
-    "po " +
-    [y > 0 ? (y === 1 ? "1 roku" : `${y} rokoch`) : "", m > 0 ? (m === 1 ? "1 mesiaci" : `${m} mesiacoch`) : ""]
+  duration: (y, m) => {
+    // 1 rok / 2–4 roky / 5+ rokov; 1 mesiac / 2–4 mesiace / 5+ mesiacov
+    const form = (n: number, one: string, few: string, many: string) => `${n} ${n === 1 ? one : n <= 4 ? few : many}`;
+    return [y > 0 ? form(y, "rok", "roky", "rokov") : "", m > 0 ? form(m, "mesiac", "mesiace", "mesiacov") : ""]
       .filter(Boolean)
-      .join(" "),
+      .join(" ");
+  },
   verdict: {
     identical: "V rámci časového horizontu sa nič predčasne nespláca, preto obe stratégie dávajú rovnaký výsledok.",
     bothTie: "Obe stratégie dávajú v oboch prípadoch rovnaký výsledok.",
@@ -411,19 +409,17 @@ const de: Strings = {
     netA: "Endvermögen Variante A",
     netB: "Endvermögen Variante B",
     difference: "Differenz (B − A)",
-    mortgageFree: "Variante B schuldenfrei",
+    mortgageFree: "Schuldenfrei",
     worstCase: (r) => `Ungünstiger Fall (${r})`,
     bestCase: (r) => `Günstiger Fall (${r})`,
-    pathAPayoff: (d) => `Variante A: ${d}`,
     below: (r) => `Unter ${r}`,
     above: (r) => `Über ${r}`,
   },
   payoffDate: (y, m) => `Jahr ${y}, Monat ${m}`,
   notWithinHorizon: "Nicht im Zeitraum",
   noMortgage: "Keine Hypothek",
-  elapsed: (y, m) =>
-    "nach " +
-    [y > 0 ? (y === 1 ? "1 Jahr" : `${y} Jahren`) : "", m > 0 ? (m === 1 ? "1 Monat" : `${m} Monaten`) : ""]
+  duration: (y, m) =>
+    [y > 0 ? `${y} ${y === 1 ? "Jahr" : "Jahre"}` : "", m > 0 ? `${m} ${m === 1 ? "Monat" : "Monate"}` : ""]
       .filter(Boolean)
       .join(" "),
   verdict: {

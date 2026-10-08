@@ -28,7 +28,7 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | Path A final net wealth |
         | Path B final net wealth |
         | Difference B − A        |
-        | Path B mortgage-free    |
+        | Mortgage-free           |
       And the final net wealth is:
         | path | worst case   | best case    |
         | A    | Ft 3,624,000 | Ft 3,624,000 |
@@ -38,10 +38,10 @@ Feature: Dashboard – cards, verdict, chart and yearly table
       And the difference is shown in the colour of the path that is ahead:
         | worst case | Path A |
         | best case  | Path A |
-      And the "Path B mortgage-free" card shows "Year 1, month 8"
-      And the "Path B mortgage-free" card notes:
-        | after 8 months           |
-        | Path A: Year 1, month 12 |
+      And the mortgage-free card shows, for a loan starting in October 2026:
+        | path | time     | date           |
+        | A    | 1 year   | September 2027 |
+        | B    | 8 months | May 2027       |
       And the verdict is:
         """
         Investing wins in both cases: by Ft 8,000 at 0.0% a year and by Ft 8,000 at 0.0% a year.
@@ -62,25 +62,27 @@ Feature: Dashboard – cards, verdict, chart and yearly table
       And the difference is shown in the colour of the path that is ahead:
         | worst case | neither |
         | best case  | neither |
-      And the "Path B mortgage-free" card shows "Not within horizon"
-      And the "Path B mortgage-free" card notes:
-        | Path A: Not within horizon |
+      And the mortgage-free card shows, for a loan starting in October 2026:
+        | path | time               | date |
+        | A    | Not within horizon |      |
+        | B    | Not within horizon |      |
       And the verdict is:
         """
         Nothing is prepaid within the time horizon, so both strategies give the same result.
         """
 
-  Scenario Outline: Payoff dates are shown as calendar year/month and as elapsed time
-    Then a payoff in month <month> is shown as "<date>" and "<elapsed>"
+  Scenario Outline: A payoff is shown as the time until it and its calendar month
+    Month 1 of the loan is the month the app is used in; here October 2026.
+    Then a payoff in month <month> of a loan starting in October 2026 is shown as "<time>" in "<date>"
 
     Examples:
-      | month | date              | elapsed                  |
-      | 1     | Year 1, month 1   | after 1 month            |
-      | 11    | Year 1, month 11  | after 11 months          |
-      | 12    | Year 1, month 12  | after 1 year             |
-      | 13    | Year 2, month 1   | after 1 year 1 month     |
-      | 130   | Year 11, month 10 | after 10 years 10 months |
-      | 360   | Year 30, month 12 | after 30 years           |
+      | month | time               | date           |
+      | 1     | 1 month            | October 2026   |
+      | 11    | 11 months          | August 2027    |
+      | 12    | 1 year             | September 2027 |
+      | 13    | 1 year 1 month     | October 2027   |
+      | 130   | 10 years 10 months | July 2037      |
+      | 360   | 30 years           | September 2056 |
 
   Rule: The chart shows each path as a band from worst to best case, plus Path B's remaining loan
 
