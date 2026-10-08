@@ -112,10 +112,6 @@ export interface CardLine {
   tone?: "a" | "b";
   /** Path and case to highlight in the chart and table while this value is hovered or focused. */
   highlight?: Highlight;
-  /** Shown after the value in brackets, on the same line (e.g. a calendar date). */
-  detail?: string;
-  /** Label, value and detail on one line instead of the label above the value. */
-  inline?: boolean;
 }
 
 export type PathName = "A" | "B";
@@ -189,14 +185,16 @@ export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language, start:
           ["A", payoffMonthA],
           ["B", payoffMonthB],
         ] as const
-      ).map(([path, month]) => ({
-        label: `${path === "A" ? STRINGS[lang].pathA : STRINGS[lang].pathB}:`,
+      ).map(([path, month]) => {
+        const name = path === "A" ? STRINGS[lang].pathA : STRINGS[lang].pathB;
+        // Same layout as the other cards: small label (with the calendar month), large value.
         // A payoff month 0 means there is no loan; null means not paid off within the horizon.
-        value: month ? describeDuration(month, lang) : describePayoff(month, lang),
-        detail: month ? calendarMonth(month, start, lang) : undefined,
-        tone: path === "A" ? ("a" as const) : ("b" as const),
-        inline: true,
-      })),
+        return {
+          label: month ? `${name} (${calendarMonth(month, start, lang)})` : name,
+          value: month ? describeDuration(month, lang) : describePayoff(month, lang),
+          tone: path === "A" ? ("a" as const) : ("b" as const),
+        };
+      }),
       notes: [],
     },
   ];

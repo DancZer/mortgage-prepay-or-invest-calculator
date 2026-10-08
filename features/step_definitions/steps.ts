@@ -406,9 +406,9 @@ Then(
     rows.forEach((row, i) => {
       const line = card.lines[i];
       const pathName = row.path === "A" ? STRINGS[this.lang].pathA : STRINGS[this.lang].pathB;
-      assert.equal(line.label, `${pathName}:`, `line ${i + 1} label`);
+      // Like "Worst case (3.0%)" on the other cards, the label carries the detail in brackets.
+      assert.equal(line.label, row.date ? `${pathName} (${row.date})` : pathName, `Path ${row.path} label`);
       assert.equal(line.value, row.time, `Path ${row.path} time`);
-      assert.equal(line.detail ?? "", row.date, `Path ${row.path} date`);
     });
   },
 );

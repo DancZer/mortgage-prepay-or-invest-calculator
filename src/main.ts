@@ -314,16 +314,11 @@ function renderCards(sc: Scenarios) {
     <div class="card">
       <span>${escapeHtml(c.title)}</span>
       ${c.lines
-        .map((l) =>
-          l.inline
-            ? `<div class="card-line inline"><small>${escapeHtml(l.label)}</small> <strong${
-                l.tone ? ` class="${l.tone}"` : ""
-              }>${escapeHtml(l.value)}</strong>${l.detail ? ` <small>(${escapeHtml(l.detail)})</small>` : ""}</div>`
-            : `<div class="card-line"${
-                l.highlight
-                  ? ` tabindex="0" data-path="${l.highlight.path}" data-scenario="${l.highlight.scenario}"`
-                  : ""
-              }>${l.label ? `<small>${escapeHtml(l.label)}</small>` : ""}
+        .map(
+          (l) =>
+            `<div class="card-line"${
+              l.highlight ? ` tabindex="0" data-path="${l.highlight.path}" data-scenario="${l.highlight.scenario}"` : ""
+            }>${l.label ? `<small>${escapeHtml(l.label)}</small>` : ""}
             <strong${(l.tone ?? c.tone) ? ` class="${l.tone ?? c.tone}"` : ""}>${escapeHtml(l.value)}</strong></div>`,
         )
         .join("")}
