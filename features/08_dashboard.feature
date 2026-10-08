@@ -34,8 +34,7 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | A    | Ft 3,624,000 | Ft 3,624,000 |
         | B    | Ft 3,616,000 | Ft 3,616,000 |
       And the "Difference B − A" card shows "-Ft 8,000 / -Ft 8,000"
-      And the "Difference B − A" card notes:
-        | Above 0: Path B is ahead · below 0: Path A is ahead |
+      And the "Difference B − A" card has no notes
       And the difference is shown in the colour of the path that is ahead:
         | worst case | Path A |
         | best case  | Path A |

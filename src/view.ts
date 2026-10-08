@@ -158,7 +158,7 @@ export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language): Card[
           tone: diff >= 1 ? "b" : diff <= -1 ? "a" : undefined,
         };
       }),
-      notes: [t.differenceNote],
+      notes: [],
     },
     {
       title: t.mortgageFree,

@@ -48,7 +48,6 @@ export interface Strings {
     mortgageFree: string;
     worstCase: (rate: string) => string;
     bestCase: (rate: string) => string;
-    differenceNote: string;
     pathAPayoff: (date: string) => string;
     /** Break-even return outside the searched range (used in descriptions of the break-even return). */
     below: (rate: string) => string;
@@ -121,7 +120,6 @@ const en: Strings = {
     mortgageFree: "Path B mortgage-free",
     worstCase: (r) => `Worst case (${r})`,
     bestCase: (r) => `Best case (${r})`,
-    differenceNote: "Above 0: Path B is ahead · below 0: Path A is ahead",
     pathAPayoff: (d) => `Path A: ${d}`,
     below: (r) => `Below ${r}`,
     above: (r) => `Above ${r}`,
@@ -221,7 +219,6 @@ const hu: Strings = {
     mortgageFree: "B változat hitelmentes",
     worstCase: (r) => `Legrosszabb eset (${r})`,
     bestCase: (r) => `Legjobb eset (${r})`,
-    differenceNote: "Pozitív: a B változat áll jobban · negatív: az A változat",
     pathAPayoff: (d) => `A változat: ${d}`,
     below: (r) => `${r} alatt`,
     above: (r) => `${r} felett`,
@@ -318,7 +315,6 @@ const sk: Strings = {
     mortgageFree: "Variant B bez hypotéky",
     worstCase: (r) => `Najhorší prípad (${r})`,
     bestCase: (r) => `Najlepší prípad (${r})`,
-    differenceNote: "Kladný: vedie variant B · záporný: vedie variant A",
     pathAPayoff: (d) => `Variant A: ${d}`,
     below: (r) => `Pod ${r}`,
     above: (r) => `Nad ${r}`,
@@ -418,7 +414,6 @@ const de: Strings = {
     mortgageFree: "Variante B schuldenfrei",
     worstCase: (r) => `Ungünstiger Fall (${r})`,
     bestCase: (r) => `Günstiger Fall (${r})`,
-    differenceNote: "Positiv: Variante B liegt vorn · negativ: Variante A liegt vorn",
     pathAPayoff: (d) => `Variante A: ${d}`,
     below: (r) => `Unter ${r}`,
     above: (r) => `Über ${r}`,

@@ -613,3 +613,9 @@ Then(
     }
   },
 );
+
+Then("the {string} card has no notes", function (this: SimWorld, title: string) {
+  const card = cards(this).find((c) => c.title === title);
+  assert.ok(card, `no card titled "${title}"`);
+  assert.deepEqual(card.notes, []);
+});
