@@ -8,7 +8,7 @@ import {
   Tooltip,
   type Plugin,
 } from "chart.js";
-import { installmentTooLow, simulate, toYearMonth, type SimInputs, type SimResult } from "./calc";
+import { elapsedTime, installmentTooLow, simulate, toYearMonth, type SimInputs, type SimResult } from "./calc";
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend);
 
@@ -86,15 +86,15 @@ capPrepay();
 const css = getComputedStyle(document.documentElement);
 const color = (name: string) => css.getPropertyValue(name).trim();
 
-let payoffYearB: number | null = null;
+let payoffMonthB: number | null = null;
 
 /** Draws a dashed vertical line where Path B's mortgage is paid off. */
 const payoffLine: Plugin<"line"> = {
   id: "payoffLine",
   afterDatasetsDraw(chart) {
-    if (payoffYearB === null) return;
+    if (payoffMonthB === null) return;
     const { ctx, chartArea, scales } = chart;
-    const x = scales.x.getPixelForValue(payoffYearB);
+    const x = scales.x.getPixelForValue(payoffMonthB / 12);
     ctx.save();
     ctx.strokeStyle = color("--muted");
     ctx.setLineDash([4, 4]);
@@ -104,7 +104,11 @@ const payoffLine: Plugin<"line"> = {
     ctx.stroke();
     ctx.fillStyle = color("--muted");
     ctx.font = "12px system-ui, sans-serif";
-    ctx.fillText("B mortgage-free", x + 6, chartArea.top + 14);
+    const label = `B mortgage-free: ${describePayoff(payoffMonthB)}`;
+    // Put the label on the left of the line when it would run off the right edge.
+    const onLeft = x + 6 + ctx.measureText(label).width > chartArea.right;
+    ctx.textAlign = onLeft ? "right" : "left";
+    ctx.fillText(label, onLeft ? x - 6 : x + 6, chartArea.top + 14);
     ctx.restore();
   },
 };
@@ -134,7 +138,7 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
     elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2 } },
     interaction: { mode: "index", intersect: false },
     scales: {
-      x: { type: "linear", min: 0, title: { display: true, text: "Year" }, ticks: { stepSize: 1 } },
+      x: { type: "linear", min: 0, title: { display: true, text: "Years elapsed" }, ticks: { stepSize: 1 } },
       y: { ticks: { callback: (v) => fmtMillions(Number(v)) } },
     },
     plugins: {
@@ -160,6 +164,15 @@ function describePayoff(month: number | null): string {
   return `Year ${ym.year}, month ${ym.month}`;
 }
 
+function describeElapsed(month: number | null): string {
+  if (month === null) return "";
+  const { years, months } = elapsedTime(month);
+  const parts = [];
+  if (years > 0) parts.push(`${years} ${years === 1 ? "year" : "years"}`);
+  if (months > 0) parts.push(`${months} ${months === 1 ? "month" : "months"}`);
+  return `after ${parts.join(" ")}`;
+}
+
 function renderCards(res: SimResult) {
   const last = res.rows[res.rows.length - 1];
   const diff = last.netB - last.netA;
@@ -170,6 +183,7 @@ function renderCards(res: SimResult) {
     <div class="card"><span>${winner} by</span><strong>${fmtMoney(Math.abs(diff))}</strong></div>
     <div class="card">
       <span>Path B mortgage-free</span><strong>${describePayoff(res.payoffMonthB)}</strong>
+      <small>${describeElapsed(res.payoffMonthB)}</small>
       <small>Path A: ${describePayoff(res.payoffMonthA)}</small>
     </div>`;
 }
@@ -182,7 +196,8 @@ function renderTable(res: SimResult) {
       const year = r.month / 12;
       const tr = document.createElement("tr");
       if (year === payoffYear) tr.className = "payoff";
-      const cells = [String(year), r.extra, r.netA, r.netB, r.netB - r.netA, r.loanA, r.loanB, r.invA, r.invB];
+      const investedB = res.rows.slice(r.month - 11, r.month + 1).reduce((sum, row) => sum + row.contribB, 0);
+      const cells = [String(year), r.extra, r.netA, r.netB, r.netB - r.netA, r.loanA, r.loanB, investedB, r.invA, r.invB];
       cells.forEach((c, i) => {
         const td = document.createElement("td");
         td.textContent = typeof c === "number" ? fmtMoney(c) : c;
@@ -201,7 +216,7 @@ function update() {
   warningEl.textContent =
     "The monthly installment doesn't cover the first month's interest, so the Path A loan never shrinks. Raise the installment or lower the loan amount or interest rate.";
 
-  payoffYearB = res.payoffMonthB === null ? null : res.payoffMonthB / 12;
+  payoffMonthB = res.payoffMonthB;
   chart.options.scales!.x!.max = inputs.years;
   chart.data.datasets[0].data = res.rows.map((r) => ({ x: r.month / 12, y: r.netA }));
   chart.data.datasets[1].data = res.rows.map((r) => ({ x: r.month / 12, y: r.netB }));

@@ -27,6 +27,8 @@ export interface MonthRow {
   invA: number;
   netA: number;
   loanB: number;
+  /** Money paid into the Path B investments this month (before returns). */
+  contribB: number;
   invB: number;
   netB: number;
 }
@@ -61,7 +63,7 @@ export function simulate(p: SimInputs): SimResult {
   let payoffMonthB: number | null = null;
 
   const rows: MonthRow[] = [
-    { month: 0, extra: 0, loanA, invA, netA: p.initial - loanA, loanB, invB, netB: p.initial - loanB },
+    { month: 0, extra: 0, loanA, invA, netA: p.initial - loanA, loanB, contribB: 0, invB, netB: p.initial - loanB },
   ];
 
   for (let m = 1; m <= totalMonths; m++) {
@@ -106,6 +108,7 @@ export function simulate(p: SimInputs): SimResult {
       invA,
       netA: p.initial + invA - loanA,
       loanB,
+      contribB: toInvestB,
       invB,
       netB: p.initial + invB - loanB,
     });
@@ -117,6 +120,11 @@ export function simulate(p: SimInputs): SimResult {
 /** Converts a 1-based month index into year and month-of-year (both 1-based). */
 export function toYearMonth(month: number): { year: number; month: number } {
   return { year: Math.floor((month - 1) / 12) + 1, month: ((month - 1) % 12) + 1 };
+}
+
+/** Time elapsed at the end of a 1-based month index, in whole years and remaining months. */
+export function elapsedTime(month: number): { years: number; months: number } {
+  return { years: Math.floor(month / 12), months: month % 12 };
 }
 
 /** True when the installment does not even cover the first month's interest. */

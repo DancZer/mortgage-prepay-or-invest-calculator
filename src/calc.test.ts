@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { installmentTooLow, simulate, toYearMonth, type SimInputs } from "./calc";
+import { elapsedTime, installmentTooLow, simulate, toYearMonth, type SimInputs } from "./calc";
 
 const defaults: SimInputs = {
   initial: 45_000_000,
@@ -55,6 +55,17 @@ describe("simulate", () => {
     expect(payoffMonthB!).toBeLessThan(payoffMonthA!);
   });
 
+  it("after Path B payoff, invests installment + inflated extra every month", () => {
+    // Prepay all extra savings: payoff lands in year 11, month 10 (month 130).
+    const { rows, payoffMonthB } = simulate({ ...defaults, prepay: 150_000 });
+    expect(payoffMonthB).toBe(130);
+    for (let m = 1; m < 130; m++) expect(rows[m].contribB).toBe(0);
+    for (let m = 131; m <= 300; m++) expect(rows[m].contribB).toBeCloseTo(300_000 + rows[m].extra, 6);
+    // Year 12 is the first full mortgage-free year.
+    const year12 = rows.slice(133, 145).reduce((s, r) => s + r.contribB, 0);
+    expect(year12).toBeCloseTo(12 * (300_000 + 150_000 * Math.pow(1.04, 11)), 4);
+  });
+
   it("conserves money in the payoff month (zero rates, exact numbers)", () => {
     // 1,000,000 loan, 0% interest. Path A pays 10,000/month -> paid off in month 100.
     // Path B pays 15,000/month -> month 67 needs only 10,000, so 5,000 is invested,
@@ -75,6 +86,8 @@ describe("simulate", () => {
     const last = rows[120];
     expect(last.netA).toBeCloseTo(1_600_000, 6);
     expect(last.netB).toBeCloseTo(1_800_000, 6);
+    expect(rows[67].contribB).toBeCloseTo(5_000, 6);
+    expect(rows[68].contribB).toBeCloseTo(15_000, 6);
   });
 });
 
@@ -83,6 +96,11 @@ describe("helpers", () => {
     expect(toYearMonth(1)).toEqual({ year: 1, month: 1 });
     expect(toYearMonth(12)).toEqual({ year: 1, month: 12 });
     expect(toYearMonth(13)).toEqual({ year: 2, month: 1 });
+  });
+
+  it("elapsedTime", () => {
+    expect(elapsedTime(130)).toEqual({ years: 10, months: 10 });
+    expect(elapsedTime(12)).toEqual({ years: 1, months: 0 });
   });
 
   it("installmentTooLow", () => {
