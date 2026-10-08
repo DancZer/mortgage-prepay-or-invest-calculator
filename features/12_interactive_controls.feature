@@ -48,3 +48,10 @@ Feature: Interactive controls (checked by hand in the browser)
     Then the "Path A – best case" chart line is drawn thicker and all other lines fade
     And the table shows the best case with the Path A columns shaded blue
     And when I move the mouse away everything returns to how it was
+
+  Scenario: On wide screens the page fits the window and only the table scrolls
+    Given the app is open in a window wider than 860 pixels and at least 700 pixels high
+    Then the page has no scrollbar
+    And the disclaimer and privacy note below the table are fully visible
+    And the chart and the table share the remaining height
+    And only the table scrolls when it has more rows than fit
