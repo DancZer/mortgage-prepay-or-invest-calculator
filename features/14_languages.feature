@@ -144,16 +144,17 @@ Feature: Languages and credits
         | Slovak    | Závisí to od výnosov: pri výnose 3,0 % ročne vyhráva predčasné splácanie o 12 423 253 Ft, pri výnose 10,0 % ročne vyhráva investovanie o 38 888 517 Ft. Investovanie vychádza lepšie, len ak vaše investície zarobia viac ako 6,05 % ročne.                    |
         | German    | Das hängt von Ihrer Rendite ab: bei 3,0 % pro Jahr gewinnt die Sondertilgung um 12.423.253 Ft, bei 10,0 % pro Jahr gewinnt das Investieren um 38.888.517 Ft. Investieren lohnt sich nur, wenn Ihre Anlagen mehr als 6,05 % pro Jahr erzielen.             |
 
-    Scenario Outline: Break-even card
+    Scenario Outline: Difference card (worst case / best case)
       Given the default parameters
       And the language is <language>
-      Then the "<card>" card shows "<value>"
+      Then the "<card>" card shows "<values>"
 
       Examples:
-        | language  | card               | value  |
-        | Hungarian | Küszöbhozam        | 6,05%  |
-        | Slovak    | Hraničný výnos     | 6,05 % |
-        | German    | Break-even-Rendite | 6,05 % |
+        | language  | card              | values                          |
+        | Hungarian | Különbség (B − A) | +12 423 253 Ft / -38 888 517 Ft |
+        | Slovak    | Rozdiel (B − A)   | +12 423 253 Ft / -38 888 517 Ft |
+        | German    | Differenz (B − A) | +12.423.253 Ft / -38.888.517 Ft |
+        | English   | Difference B − A  | +Ft 12,423,253 / -Ft 38,888,517 |
 
   Rule: The credits name the author, date, GitHub profile and license
 

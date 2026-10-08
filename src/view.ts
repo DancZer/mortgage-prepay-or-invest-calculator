@@ -65,6 +65,11 @@ export function describeInputError(def: ParamDef, error: TypedError, currency: C
   return error.kind === "belowMin" ? t.min(limit) : t.max(limit);
 }
 
+/** Difference with an explicit sign, e.g. "+Ft 12,423,253" or "-38 888 517 Ft"; 0 has no sign. */
+export function signedMoney(v: number, currency: CurrencyCode, lang: Language): string {
+  return formatMoney(Math.abs(v) < 1 ? 0 : v, currency, locale(lang), true);
+}
+
 /** "Year 11, month 10" (1-based, in the chosen language), "Not within horizon", or "No mortgage" for month 0. */
 export function describePayoff(month: number | null, lang: Language): string {
   if (month === null) return STRINGS[lang].notWithinHorizon;
@@ -85,6 +90,8 @@ const final = (res: SimResult) => res.rows[res.rows.length - 1];
 export interface CardLine {
   label: string;
   value: string;
+  /** Colour of the value; overrides the card's tone. */
+  tone?: "a" | "b";
 }
 
 export interface Card {
@@ -94,6 +101,7 @@ export interface Card {
   tone?: "a" | "b";
 }
 
+/** The break-even return as text; used by the requirement scenarios (the app states it in the verdict). */
 export function describeBreakEven(be: BreakEven, lang: Language): string {
   const t = STRINGS[lang].cards;
   switch (be.kind) {
@@ -108,7 +116,7 @@ export function describeBreakEven(be: BreakEven, lang: Language): string {
   }
 }
 
-export function summaryCards(a: AppInputs, sc: Scenarios, be: BreakEven, lang: Language): Card[] {
+export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language): Card[] {
   const t = STRINGS[lang].cards;
   const caseLines = (key: "netA" | "netB") => [
     { label: t.worstCase(fmtPct(a.invWorst, lang)), value: money(final(sc.worst)[key], a.currency, lang) },
@@ -120,9 +128,17 @@ export function summaryCards(a: AppInputs, sc: Scenarios, be: BreakEven, lang: L
     { title: t.netA, lines: caseLines("netA"), notes: [], tone: "a" },
     { title: t.netB, lines: caseLines("netB"), notes: [], tone: "b" },
     {
-      title: t.breakEven,
-      lines: [{ label: "", value: describeBreakEven(be, lang) }],
-      notes: [be.kind === "identical" ? t.nothingPrepaid : t.breakEvenNote],
+      title: t.difference,
+      lines: (["worst", "best"] as Case[]).map((c) => {
+        const diff = final(sc[c]).netB - final(sc[c]).netA;
+        const rate = fmtPct(c === "worst" ? a.invWorst : a.invBest, lang);
+        return {
+          label: c === "worst" ? t.worstCase(rate) : t.bestCase(rate),
+          value: signedMoney(diff, a.currency, lang),
+          tone: diff >= 1 ? "b" : diff <= -1 ? "a" : undefined,
+        };
+      }),
+      notes: [t.differenceNote],
     },
     {
       title: t.mortgageFree,

@@ -26,9 +26,12 @@ export function isCurrencyCode(value: unknown): value is CurrencyCode {
 
 const formatters = new Map<string, Intl.NumberFormat>();
 
-/** Formats an amount in whole units for a locale, e.g. "45 000 000 Ft" (hu-HU) or "€45,000,000" (en-GB). */
-export function formatMoney(value: number, currency: CurrencyCode, locale: string): string {
-  const key = `${locale}|${currency}`;
+/**
+ * Formats an amount in whole units for a locale, e.g. "45 000 000 Ft" (hu-HU) or "€45,000,000" (en-GB).
+ * With `signed`, positive amounts get a "+" (zero gets no sign).
+ */
+export function formatMoney(value: number, currency: CurrencyCode, locale: string, signed = false): string {
+  const key = `${locale}|${currency}|${signed}`;
   let formatter = formatters.get(key);
   if (!formatter) {
     formatter = new Intl.NumberFormat(locale, {
@@ -36,6 +39,7 @@ export function formatMoney(value: number, currency: CurrencyCode, locale: strin
       currency,
       currencyDisplay: "narrowSymbol",
       maximumFractionDigits: 0,
+      signDisplay: signed ? "exceptZero" : "auto",
     });
     formatters.set(key, formatter);
   }

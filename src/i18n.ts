@@ -43,13 +43,14 @@ export interface Strings {
   cards: {
     netA: string;
     netB: string;
-    breakEven: string;
+    /** Title of the card with the final net wealth difference B − A. */
+    difference: string;
     mortgageFree: string;
     worstCase: (rate: string) => string;
     bestCase: (rate: string) => string;
-    breakEvenNote: string;
-    nothingPrepaid: string;
+    differenceNote: string;
     pathAPayoff: (date: string) => string;
+    /** Break-even return outside the searched range (used in descriptions of the break-even return). */
     below: (rate: string) => string;
     above: (rate: string) => string;
   };
@@ -116,12 +117,11 @@ const en: Strings = {
   cards: {
     netA: "Path A final net wealth",
     netB: "Path B final net wealth",
-    breakEven: "Break-even return",
+    difference: "Difference B − A",
     mortgageFree: "Path B mortgage-free",
     worstCase: (r) => `Worst case (${r})`,
     bestCase: (r) => `Best case (${r})`,
-    breakEvenNote: "Investing wins above it, prepaying below it",
-    nothingPrepaid: "Nothing is prepaid",
+    differenceNote: "Above 0: Path B is ahead · below 0: Path A is ahead",
     pathAPayoff: (d) => `Path A: ${d}`,
     below: (r) => `Below ${r}`,
     above: (r) => `Above ${r}`,
@@ -217,12 +217,11 @@ const hu: Strings = {
   cards: {
     netA: "A változat végső nettó vagyona",
     netB: "B változat végső nettó vagyona",
-    breakEven: "Küszöbhozam",
+    difference: "Különbség (B − A)",
     mortgageFree: "B változat hitelmentes",
     worstCase: (r) => `Legrosszabb eset (${r})`,
     bestCase: (r) => `Legjobb eset (${r})`,
-    breakEvenNote: "Felette a befektetés, alatta az előtörlesztés nyer",
-    nothingPrepaid: "Nincs előtörlesztés",
+    differenceNote: "Pozitív: a B változat áll jobban · negatív: az A változat",
     pathAPayoff: (d) => `A változat: ${d}`,
     below: (r) => `${r} alatt`,
     above: (r) => `${r} felett`,
@@ -315,12 +314,11 @@ const sk: Strings = {
   cards: {
     netA: "Konečný čistý majetok – variant A",
     netB: "Konečný čistý majetok – variant B",
-    breakEven: "Hraničný výnos",
+    difference: "Rozdiel (B − A)",
     mortgageFree: "Variant B bez hypotéky",
     worstCase: (r) => `Najhorší prípad (${r})`,
     bestCase: (r) => `Najlepší prípad (${r})`,
-    breakEvenNote: "Nad ním vyhráva investovanie, pod ním predčasné splácanie",
-    nothingPrepaid: "Nič sa predčasne nespláca",
+    differenceNote: "Kladný: vedie variant B · záporný: vedie variant A",
     pathAPayoff: (d) => `Variant A: ${d}`,
     below: (r) => `Pod ${r}`,
     above: (r) => `Nad ${r}`,
@@ -416,12 +414,11 @@ const de: Strings = {
   cards: {
     netA: "Endvermögen Variante A",
     netB: "Endvermögen Variante B",
-    breakEven: "Break-even-Rendite",
+    difference: "Differenz (B − A)",
     mortgageFree: "Variante B schuldenfrei",
     worstCase: (r) => `Ungünstiger Fall (${r})`,
     bestCase: (r) => `Günstiger Fall (${r})`,
-    breakEvenNote: "Darüber gewinnt das Investieren, darunter die Sondertilgung",
-    nothingPrepaid: "Keine Sondertilgung",
+    differenceNote: "Positiv: Variante B liegt vorn · negativ: Variante A liegt vorn",
     pathAPayoff: (d) => `Variante A: ${d}`,
     below: (r) => `Unter ${r}`,
     above: (r) => `Über ${r}`,

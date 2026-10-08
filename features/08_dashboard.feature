@@ -19,22 +19,26 @@ Feature: Dashboard – cards, verdict, chart and yearly table
       | prepayment penalty    | 2%       |
       | years                 | 2         |
 
-  Rule: Summary cards show both final results in both cases, the break-even return and Path B's payoff date
+  Rule: Summary cards show both final results, their difference B − A in both cases, and Path B's payoff date
+    The break-even return is not a card; it is stated in the verdict.
 
     Scenario: The four cards
       When I run the simulation
       Then the cards are titled:
         | Path A final net wealth |
         | Path B final net wealth |
-        | Break-even return       |
+        | Difference B − A        |
         | Path B mortgage-free    |
       And the final net wealth is:
         | path | worst case   | best case    |
         | A    | Ft 3,624,000 | Ft 3,624,000 |
         | B    | Ft 3,616,000 | Ft 3,616,000 |
-      And the "Break-even return" card shows "-3.96%"
-      And the "Break-even return" card notes:
-        | Investing wins above it, prepaying below it |
+      And the "Difference B − A" card shows "-Ft 8,000 / -Ft 8,000"
+      And the "Difference B − A" card notes:
+        | Above 0: Path B is ahead · below 0: Path A is ahead |
+      And the difference is shown in the colour of the path that is ahead:
+        | worst case | Path A |
+        | best case  | Path A |
       And the "Path B mortgage-free" card shows "Year 1, month 8"
       And the "Path B mortgage-free" card notes:
         | after 8 months           |
@@ -55,9 +59,10 @@ Feature: Dashboard – cards, verdict, chart and yearly table
         | path | worst case   | best case    |
         | A    | Ft 1,212,000 | Ft 1,212,000 |
         | B    | Ft 1,212,000 | Ft 1,212,000 |
-      And the "Break-even return" card shows "—"
-      And the "Break-even return" card notes:
-        | Nothing is prepaid |
+      And the "Difference B − A" card shows "Ft 0 / Ft 0"
+      And the difference is shown in the colour of the path that is ahead:
+        | worst case | neither |
+        | best case  | neither |
       And the "Path B mortgage-free" card shows "Not within horizon"
       And the "Path B mortgage-free" card notes:
         | Path A: Not within horizon |

@@ -16,4 +16,8 @@ Feature: Reference results for the default parameters
       | A    | Ft 234,359,337 | Ft 405,154,714 |
       | B    | Ft 246,782,590 | Ft 366,266,197 |
     And the break-even return is "6.05%"
+    And the "Difference B − A" card shows "+Ft 12,423,253 / -Ft 38,888,517"
+    And the difference is shown in the colour of the path that is ahead:
+      | worst case | Path B |
+      | best case  | Path A |
     And the "Path B mortgage-free" card shows "Year 15, month 6"

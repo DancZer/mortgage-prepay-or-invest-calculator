@@ -329,7 +329,7 @@ Then("the verdict starts with {string}", function (this: SimWorld, start: string
 
 // ---------- Dashboard ----------
 
-const cards = (w: SimWorld) => summaryCards(w.inputs, w.scenarios, w.breakEven, w.lang);
+const cards = (w: SimWorld) => summaryCards(w.inputs, w.scenarios, w.lang);
 
 Then("the final net wealth is:", function (this: SimWorld, table: DataTable) {
   for (const row of table.hashes()) {
@@ -560,4 +560,12 @@ Then("the credits are:", function (this: SimWorld, table: DataTable) {
 Then(/^0 is within the (.+) slider's range$/, function (this: SimWorld, name: string) {
   const def = paramDef(paramKey(name));
   assert.ok(def.min <= 0 && def.max >= 0, `${name}: slider range ${def.min}–${def.max} does not include 0`);
+});
+
+Then("the difference is shown in the colour of the path that is ahead:", function (this: SimWorld, table: DataTable) {
+  const card = cards(this)[2];
+  const toneName = (tone: string | undefined) => (tone === "a" ? "Path A" : tone === "b" ? "Path B" : "neither");
+  const expected = table.rowsHash();
+  assert.equal(toneName(card.lines[0].tone), expected["worst case"], "worst case colour");
+  assert.equal(toneName(card.lines[1].tone), expected["best case"], "best case colour");
 });

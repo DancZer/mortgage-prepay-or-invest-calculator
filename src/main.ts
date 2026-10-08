@@ -304,7 +304,7 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
 
 function renderCards(sc: Scenarios) {
   const be = breakEvenReturn(inputs);
-  cardsEl.innerHTML = summaryCards(inputs, sc, be, lang)
+  cardsEl.innerHTML = summaryCards(inputs, sc, lang)
     .map(
       (c) => `
     <div class="card">
@@ -312,7 +312,7 @@ function renderCards(sc: Scenarios) {
       ${c.lines
         .map(
           (l) => `<div class="card-line">${l.label ? `<small>${escapeHtml(l.label)}</small>` : ""}
-            <strong${c.tone ? ` class="${c.tone}"` : ""}>${escapeHtml(l.value)}</strong></div>`,
+            <strong${(l.tone ?? c.tone) ? ` class="${l.tone ?? c.tone}"` : ""}>${escapeHtml(l.value)}</strong></div>`,
         )
         .join("")}
       ${c.notes.map((n) => `<small>${escapeHtml(n)}</small>`).join("")}
