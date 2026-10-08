@@ -141,7 +141,7 @@ Feature: Languages and credits
 
       Examples:
         | language  | verdict                                                                                                                                                                                                                                                      |
-        | Hungarian | Ez a hozamtól függ: évi 3,0% hozamnál az előtörlesztés nyer 12 423 253 Ft különbséggel, évi 10,0% hozamnál a befektetés nyer 38 888 517 Ft különbséggel. A befektetés csak akkor jár jobban, ha évente több mint 6,05% hozamot ér el.                        |
+        | Hungarian | Ez a hozamtól függ: évi 3,0% hozamnál az előtörlesztés nyer 12 423 253 Ft különbséggel, évi 10,0% hozamnál a befektetés nyer 38 888 517 Ft különbséggel. A befektetéssel, csak akkor jár jobban, ha évente több mint 6,05% hozamot ér el.                        |
         | Slovak    | Závisí to od výnosov: pri výnose 3,0 % ročne vyhráva predčasné splácanie o 12 423 253 Ft, pri výnose 10,0 % ročne vyhráva investovanie o 38 888 517 Ft. Investovanie vychádza lepšie, len ak vaše investície zarobia viac ako 6,05 % ročne.                    |
         | German    | Das hängt von Ihrer Rendite ab: bei 3,0 % pro Jahr gewinnt die Sondertilgung um 12.423.253 Ft, bei 10,0 % pro Jahr gewinnt das Investieren um 38.888.517 Ft. Investieren lohnt sich nur, wenn Ihre Anlagen mehr als 6,05 % pro Jahr erzielen.             |
 

@@ -234,7 +234,7 @@ const hu: Strings = {
       w === "tie"
         ? `évi ${r} hozamnál a két eredmény azonos`
         : `évi ${r} hozamnál ${w === "A" ? "a befektetés" : "az előtörlesztés"} nyer ${a} különbséggel`,
-    breakEvenAt: (r) => `A befektetés csak akkor jár jobban, ha évente több mint ${r} hozamot ér el.`,
+    breakEvenAt: (r) => `A befektetéssel, csak akkor jár jobban, ha évente több mint ${r} hozamot ér el.`,
     investAlways: (min, max) => `A befektetés évi ${min} és ${max} közötti bármely hozamnál jobban jár.`,
     prepayAlways: (min, max) => `Az előtörlesztés évi ${min} és ${max} közötti bármely hozamnál jobban jár.`,
   },
