@@ -55,3 +55,8 @@ Feature: Interactive controls (checked by hand in the browser)
     And the disclaimer and privacy note below the table are fully visible
     And the chart and the table share the remaining height
     And only the table scrolls when it has more rows than fit
+
+  Scenario: The payoff year row is grey like the chart's payoff line
+    Given the app is open in the browser
+    Then the table row of the year Path B becomes mortgage-free is shaded grey, the colour of the dashed payoff line
+    And it stays grey in the highlighted columns while I hover a final net wealth value

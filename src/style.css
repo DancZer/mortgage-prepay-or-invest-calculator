@@ -10,7 +10,8 @@
   --series-loan: #d64545;
   --series-a-band: rgba(47, 111, 222, 0.15);
   --series-b-band: rgba(31, 158, 110, 0.15);
-  --payoff-bg: #eaf6f0;
+  /* Light tint of --muted, the colour of the chart's dashed payoff line. */
+  --payoff-bg: rgba(91, 102, 118, 0.14);
   --warn-bg: #fff4e5;
   --warn-border: #f0b860;
   font-family:
@@ -315,7 +316,9 @@ thead th {
   font-weight: 600;
 }
 
-tr.payoff td {
+/* The payoff year stays grey, also in columns highlighted for a hovered path. */
+tr.payoff td,
+[data-hl] tr.payoff td.hl {
   background: var(--payoff-bg);
 }
 
