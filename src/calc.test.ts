@@ -67,9 +67,10 @@ describe("simulate", () => {
   });
 
   it("conserves money in the payoff month (zero rates, exact numbers)", () => {
-    // 1,000,000 loan, 0% interest. Path A pays 10,000/month -> paid off in month 100.
+    // 1,000,000 loan, 0% interest. Path A pays 10,000/month -> paid off in month 100,
+    // then invests 15,000/month for months 101..120.
     // Path B pays 15,000/month -> month 67 needs only 10,000, so 5,000 is invested,
-    // then 15,000/month for months 68..120.
+    // then 15,000/month for months 68..120. With no rates both end up equal.
     const { rows, payoffMonthA, payoffMonthB } = simulate({
       initial: 1_000_000,
       installment: 10_000,
@@ -84,7 +85,7 @@ describe("simulate", () => {
     expect(payoffMonthA).toBe(100);
     expect(payoffMonthB).toBe(67);
     const last = rows[120];
-    expect(last.netA).toBeCloseTo(1_600_000, 6);
+    expect(last.netA).toBeCloseTo(1_800_000, 6);
     expect(last.netB).toBeCloseTo(1_800_000, 6);
     expect(rows[67].contribB).toBeCloseTo(5_000, 6);
     expect(rows[68].contribB).toBeCloseTo(15_000, 6);

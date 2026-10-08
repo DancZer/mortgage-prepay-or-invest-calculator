@@ -2,7 +2,8 @@
 
 Mortgage vs. Investment wealth maximization simulator. Compares two strategies over 15–30 years:
 
-- **Path A:** pay the baseline mortgage installment and invest all extra monthly savings.
+- **Path A:** pay the baseline mortgage installment and invest all extra monthly savings;
+  once the mortgage is paid off, also invest the freed-up installment.
 - **Path B:** use part of the extra savings for mortgage prepayments (after penalty), invest the rest;
   once the mortgage is paid off, invest the freed-up installment plus all extra savings.
 

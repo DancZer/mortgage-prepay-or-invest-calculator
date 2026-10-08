@@ -62,7 +62,7 @@ Feature: Path B – prepay the mortgage, then invest everything
       When I run the simulation
       Then Path B invests nothing before month 130
 
-    Scenario: Without prepayment, Path B behaves exactly like Path A until the loan is paid off
+    Scenario: Without prepayment, Path B behaves exactly like Path A
       Path A's payoff month is checked independently with the annuity formula:
       n = −ln(1 − r·P / A) / ln(1 + r) = 288.2, so the last payment falls in month 289.
       Given the default parameters
@@ -73,14 +73,13 @@ Feature: Path B – prepay the mortgage, then invest everything
       Then the Path A mortgage is paid off in month 289
       And the Path B mortgage is paid off in month 289
       And the Path B loan equals the Path A loan in every month
-      And Path B investments equal Path A investments up to month 288
-      # In month 289 they differ: the last installment is larger than the remaining balance.
-      # Path B invests the unused part; Path A (as written in the spec) does not. See the
-      # OPEN QUESTION in 04_path_a.feature.
+      And Path B investments equal Path A investments up to month 360
+      And the dashboard shows a tie
 
   Rule: In the payoff month only what the bank still needs is paid; the remainder is invested
     Deviation from the original spec (agreed): the spec would invest the full installment plus
     extra savings in the payoff month AND pay the bank, counting that money twice.
+    Path A follows the same rule (see 04_path_a.feature).
 
     Scenario: The installment alone clears the last balance, so the whole prepayment is invested
       Given all rates are zero

@@ -26,6 +26,8 @@ export interface MonthRow {
   /** Inflation-adjusted prepayment budget this month, capped at `extra` (0 for month 0). */
   prepay: number;
   loanA: number;
+  /** Money paid into the Path A investments this month (before returns). */
+  contribA: number;
   invA: number;
   netA: number;
   loanB: number;
@@ -46,8 +48,9 @@ export interface SimResult {
 /**
  * Month-by-month simulation of two strategies:
  * - Path A: pay the baseline installment, invest all extra savings.
- * - Path B: put `prepay` of the extra savings toward the loan (minus penalty), invest the rest;
- *   after payoff invest installment + full extra.
+ * - Path B: put `prepay` of the extra savings toward the loan (minus penalty), invest the rest.
+ * In both paths, money the bank doesn't need in the payoff month is invested, and after payoff
+ * the installment + full extra is invested every month.
  * Contributions are invested at the start of the month, then the month's return is applied.
  */
 export function simulate(p: SimInputs): SimResult {
@@ -65,7 +68,7 @@ export function simulate(p: SimInputs): SimResult {
   let payoffMonthB: number | null = null;
 
   const rows: MonthRow[] = [
-    { month: 0, extra: 0, prepay: 0, loanA, invA, netA: p.initial - loanA, loanB, contribB: 0, invB, netB: p.initial - loanB },
+    { month: 0, extra: 0, prepay: 0, loanA, contribA: 0, invA, netA: p.initial - loanA, loanB, contribB: 0, invB, netB: p.initial - loanB },
   ];
 
   for (let m = 1; m <= totalMonths; m++) {
@@ -76,12 +79,21 @@ export function simulate(p: SimInputs): SimResult {
     const curInvExtra = curExtra - curPrepay;
 
     // Path A
+    let toInvestA: number;
     if (loanA > 0) {
-      const interest = loanA * rm;
-      loanA = Math.max(0, loanA - (p.installment - interest));
-      if (loanA === 0) payoffMonthA = m;
+      const owed = loanA + loanA * rm;
+      // In the payoff month the part of the installment the bank doesn't need is invested.
+      const installmentUsed = Math.min(p.installment, owed);
+      loanA = owed - installmentUsed;
+      if (loanA <= 1e-6) {
+        loanA = 0;
+        payoffMonthA = m;
+      }
+      toInvestA = curExtra + (p.installment - installmentUsed);
+    } else {
+      toInvestA = p.installment + curExtra;
     }
-    invA = (invA + curExtra) * (1 + ri);
+    invA = (invA + toInvestA) * (1 + ri);
 
     // Path B
     let toInvestB: number;
@@ -108,6 +120,7 @@ export function simulate(p: SimInputs): SimResult {
       extra: curExtra,
       prepay: curPrepay,
       loanA,
+      contribA: toInvestA,
       invA,
       netA: p.initial + invA - loanA,
       loanB,

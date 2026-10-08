@@ -76,6 +76,7 @@ const MONTH_COLUMNS: Record<string, keyof MonthRow> = {
   "extra savings": "extra",
   prepayment: "prepay",
   "loan a": "loanA",
+  "invested a": "contribA",
   "investments a": "invA",
   "net wealth a": "netA",
   "loan b": "loanB",
@@ -113,11 +114,12 @@ Then("Path B invests nothing before month {int}", function (this: SimWorld, mont
 });
 
 Then(
-  "from month {int} to month {int} Path B invests the monthly installment plus that month's extra savings",
-  function (this: SimWorld, from: number, to: number) {
-    for (let m = from; m <= to; m++) {
+  /^from month (\d+) to month (\d+) Path (A|B) invests the monthly installment plus that month's extra savings$/,
+  function (this: SimWorld, from: string, to: string, path: string) {
+    for (let m = Number(from); m <= Number(to); m++) {
       const r = this.result.rows[m];
-      assert.ok(Math.abs(r.contribB - (this.inputs.installment + r.extra)) < 1e-6, `month ${m}: invested ${r.contribB}`);
+      const invested = path === "A" ? r.contribA : r.contribB;
+      assert.ok(Math.abs(invested - (this.inputs.installment + r.extra)) < 1e-6, `month ${m}: Path ${path} invested ${invested}`);
     }
   },
 );
@@ -160,13 +162,16 @@ Then("no warning is shown", function (this: SimWorld) {
 
 // ---------- Dashboard ----------
 
+/** Ignores digit grouping: hu-HU writes "8000" but "18 000", and the scenarios may use either. */
+const ungroup = (text: string) => normalize(text).replace(/(\d) (?=\d)/g, "$1");
+
 Then("the dashboard cards are:", function (this: SimWorld, table: DataTable) {
   const cards = summaryCards(this.result);
   const expected = table.raw();
   assert.equal(cards.length, expected.length, "number of cards");
   expected.forEach(([title, value], i) => {
     assert.equal(normalize(cards[i].title), normalize(title), `card ${i + 1} title`);
-    assert.equal(normalize(cards[i].value), normalize(value), `"${title}" card value`);
+    assert.equal(ungroup(cards[i].value), ungroup(value), `"${title}" card value`);
   });
 });
 
@@ -178,6 +183,12 @@ Then("the {string} card notes:", function (this: SimWorld, title: string, table:
 
 Then("the third card is titled {string}", function (this: SimWorld, title: string) {
   assert.equal(summaryCards(this.result)[2].title, title);
+});
+
+Then("the dashboard shows a tie", function (this: SimWorld) {
+  const card = summaryCards(this.result)[2];
+  assert.equal(card.title, "Tie");
+  assert.equal(normalize(card.value), "0 Ft");
 });
 
 Then("a payoff in month {int} is shown as {string} and {string}", function (month: number, date: string, elapsed: string) {

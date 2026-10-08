@@ -1,8 +1,12 @@
 Feature: Path A – pure investment
-  Path A pays the fixed installment and invests all extra savings every month.
+  Path A pays the fixed installment and invests all extra savings every month. Like Path B,
+  once its mortgage is paid off it invests the freed-up installment plus the extra savings.
     interest  = previous loan × mortgage rate / 12
     loan      = max(0, previous loan − (installment − interest))
-    investments = (previous investments + extra savings) × (1 + return / 12)
+    investments = (previous investments + invested this month) × (1 + return / 12)
+
+  Change from the original spec (agreed 2026-10-08): the spec kept Path A investing only the
+  extra savings after its payoff, which made the comparison unfair to Path A.
 
   Some scenarios use values below the sliders' ranges (small loans, 0 % rates) so the
   expected results can be checked by hand. The model accepts any value; only the sliders limit them.
@@ -47,9 +51,8 @@ Feature: Path A – pure investment
       | 11    | 100 000 | 550 000       | 1 650 000    |
       | 12    | 0       | 600 000       | 1 800 000    |
 
-  # OPEN QUESTION: the unused 50 000 of the last installment is not invested by Path A
-  # (Path B does invest it). Investments A in month 11 are only 11 × 50 000.
-  Scenario: A last installment larger than the balance leaves the loan at zero, not negative
+  Scenario: In the payoff month, the part of the installment the bank doesn't need is invested
+    The last balance is 50 000, so 50 000 of the 100 000 installment is left over and invested.
     Given all rates are zero
     And the parameters:
       | loan amount           | 1 050 000 |
@@ -59,14 +62,12 @@ Feature: Path A – pure investment
     When I run the simulation
     Then the Path A mortgage is paid off in month 11
     And the monthly results are:
-      | month | loan A | investments A |
-      | 10    | 50 000 | 500 000       |
-      | 11    | 0      | 550 000       |
-      | 12    | 0      | 600 000       |
+      | month | loan A | invested A | investments A |
+      | 10    | 50 000 | 50 000     | 500 000       |
+      | 11    | 0      | 100 000    | 600 000       |
+      | 12    | 0      | 150 000    | 750 000       |
 
-  # OPEN QUESTION: as written in the spec, Path A does NOT invest its freed-up installment
-  # after its own mortgage is paid off (Path B does). This scenario documents that behaviour.
-  Scenario: After its own payoff, Path A keeps investing only the extra savings
+  Scenario: After its own payoff, Path A invests the installment plus the extra savings
     Given all rates are zero
     And the parameters:
       | loan amount           | 1 200 000 |
@@ -74,10 +75,20 @@ Feature: Path A – pure investment
       | monthly extra savings | 50 000    |
       | years                 | 2         |
     When I run the simulation
-    Then the monthly results are:
-      | month | loan A | investments A | net wealth A |
-      | 13    | 0      | 650 000       | 1 850 000    |
-      | 24    | 0      | 1 200 000     | 2 400 000    |
+    Then the Path A mortgage is paid off in month 12
+    And the monthly results are:
+      | month | loan A | invested A | investments A | net wealth A |
+      | 12    | 0      | 50 000     | 600 000       | 1 800 000    |
+      | 13    | 0      | 150 000    | 750 000       | 1 950 000    |
+      | 24    | 0      | 150 000    | 2 400 000     | 3 600 000    |
+
+  Scenario: After payoff, Path A's investment grows with inflation like Path B's
+    Given the default parameters
+    And the parameters:
+      | years | 30 |
+    When I run the simulation
+    Then the Path A mortgage is paid off in month 289
+    And from month 290 to month 360 Path A invests the monthly installment plus that month's extra savings
 
   Rule: An installment that does not cover the interest is flagged
 

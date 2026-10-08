@@ -8,8 +8,9 @@ line chart, summary cards and a yearly table. Will be sold commercially; source 
 - Monthly engine; extra savings and prepayment budget grow by `inf` each year; prepayment capped at extra.
 - Net wealth = initial (property value) + investments − remaining loan.
 - Prepayment penalty: only `prepay / (1 + penalty)` reaches principal.
-- Payoff month in Path B: money the bank doesn't need is invested (no double counting).
-- Path A does NOT redirect the installment after its own payoff (as per the original spec).
+- Payoff month (both paths): money the bank doesn't need is invested (no double counting).
+- After payoff (both paths): installment + inflated extra savings are invested every month.
+  (Changed from the original spec for Path A, agreed with the user on 2026-10-08.)
 - Currency/locale: `CURRENCY` / `LOCALE` constants in `src/view.ts` (HUF, hu-HU).
 
 ## Stack
