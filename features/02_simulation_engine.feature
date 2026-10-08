@@ -1,6 +1,10 @@
 Feature: Monthly simulation engine
-  The simulation runs month by month, from month 1 to (years × 12).
-  Net wealth = loan amount (used as property value) + investments − remaining loan.
+  The simulation runs month by month, from month 1 to (years × 12), once with the worst-case
+  and once with the best-case investment return.
+  Net wealth = property value + investments − remaining loan.
+
+  Unless a step says "best-case", results refer to the worst case. Scenarios that set a single
+  "investment return" use it for both cases, so both cases are identical there.
 
   Background:
     Given the default parameters
@@ -21,16 +25,16 @@ Feature: Monthly simulation engine
   Scenario: At the start, the loan is untouched and nothing is invested
     When I run the simulation
     Then the monthly results are:
-      | month | loan A     | investments A | net wealth A | loan B     | investments B | net wealth B |
-      | 0     | 45 000 000 | 0             | 0            | 45 000 000 | 0             | 0            |
+      | month | property value | loan A     | investments A | net wealth A | loan B     | investments B | net wealth B |
+      | 0     | 60 000 000     | 45 000 000 | 0             | 15 000 000   | 45 000 000 | 0             | 15 000 000   |
 
-  Scenario: Net wealth follows the formula in every month
+  Scenario: Net wealth follows the formula in every month, in both cases
     When I run the simulation
-    Then in every month, net wealth equals the loan amount plus investments minus the remaining loan, for both paths
+    Then in every month, net wealth equals the property value plus investments minus the remaining loan, for both paths
 
   Scenario: The remaining loan never goes below zero
     Given the parameters:
-      | monthly prepayment | 150 000 |
-      | years              | 30      |
+      | prepayment share | 100 % |
+      | years            | 30    |
     When I run the simulation
     Then the remaining loans are never negative

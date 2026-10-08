@@ -1,15 +1,16 @@
 Feature: Path A – pure investment
   Path A pays the fixed installment and invests all extra savings every month. Like Path B,
   once its mortgage is paid off it invests the freed-up installment plus the extra savings.
-    interest  = previous loan × mortgage rate / 12
-    loan      = max(0, previous loan − (installment − interest))
+    interest    = previous loan × mortgage rate / 12
+    loan        = max(0, previous loan − (installment − interest))
     investments = (previous investments + invested this month) × (1 + return / 12)
 
-  Change from the original spec (agreed 2026-10-08): the spec kept Path A investing only the
+  Change from the original spec (decision 0003): the spec kept Path A investing only the
   extra savings after its payoff, which made the comparison unfair to Path A.
 
   Some scenarios use values below the sliders' ranges (small loans, 0 % rates) so the
   expected results can be checked by hand. The model accepts any value; only the sliders limit them.
+  Where net wealth is checked, the property value is set equal to the loan amount.
 
   Scenario: The loan is amortised with the fixed installment, interest first
     Given all rates are zero
@@ -34,15 +35,16 @@ Feature: Path A – pure investment
       | month | investments A |
       | 1     | 101 000       |
       | 2     | 203 010       |
-      | 3     | 306 040.10    |
+      | 3     | 306 040       |
 
   Scenario: Path A pays off the loan when the balance reaches zero
     Given all rates are zero
     And the parameters:
       | loan amount           | 1 200 000 |
+      | property value        | 1 200 000 |
       | monthly installment   | 100 000   |
       | monthly extra savings | 50 000    |
-      | monthly prepayment    | 0         |
+      | prepayment share      | 0 %       |
       | years                 | 2         |
     When I run the simulation
     Then the Path A mortgage is paid off in month 12
@@ -71,6 +73,7 @@ Feature: Path A – pure investment
     Given all rates are zero
     And the parameters:
       | loan amount           | 1 200 000 |
+      | property value        | 1 200 000 |
       | monthly installment   | 100 000   |
       | monthly extra savings | 50 000    |
       | years                 | 2         |
@@ -98,7 +101,7 @@ Feature: Path A – pure investment
         | loan amount         | 1 000 000 |
         | monthly installment | 5 000     |
         | mortgage rate       | 12 %      |
-        | monthly prepayment  | 0         |
+        | prepayment share    | 0 %       |
       When I run the simulation
       Then the monthly results are:
         | month | loan A    |
@@ -113,7 +116,7 @@ Feature: Path A – pure investment
         | loan amount         | 1 000 000 |
         | monthly installment | 10 000    |
         | mortgage rate       | 12 %      |
-        | monthly prepayment  | 0         |
+        | prepayment share    | 0 %       |
       When I run the simulation
       Then the monthly results are:
         | month | loan A    |

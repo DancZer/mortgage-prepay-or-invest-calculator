@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Should you prepay your mortgage or invest? Compare both strategies with your own numbers."
+    />
     <title>Mortgage vs. Investment Simulator</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
@@ -15,6 +19,7 @@
           <strong>Path B:</strong> prepay the mortgage with part of it.<br />
           Both invest the freed-up installment once their mortgage is paid off.
         </p>
+        <div class="segmented" id="currency" role="radiogroup" aria-label="Currency"></div>
         <div class="controls" id="controls"></div>
       </aside>
 
@@ -23,29 +28,43 @@
 
         <section class="cards" id="cards"></section>
 
+        <p class="verdict" id="verdict"></p>
+
         <section class="panel chart-wrap">
           <canvas id="chart"></canvas>
         </section>
 
-        <section class="panel table-wrap">
-          <table id="table">
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>Extra savings / month</th>
-                <th>Net wealth A</th>
-                <th>Net wealth B</th>
-                <th>B − A</th>
-                <th>Loan A</th>
-                <th>Loan B</th>
-                <th>Invested B (year)</th>
-                <th>Investments A</th>
-                <th>Investments B</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+        <section class="panel table-panel">
+          <div class="table-header">
+            <h2>Year by year</h2>
+            <div class="segmented" id="table-case" role="radiogroup" aria-label="Scenario shown in the table"></div>
+          </div>
+          <div class="table-wrap">
+            <table id="table">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Extra savings / month</th>
+                  <th>Property value</th>
+                  <th>Net wealth A</th>
+                  <th>Net wealth B</th>
+                  <th>B − A</th>
+                  <th>Loan A</th>
+                  <th>Loan B</th>
+                  <th>Invested B (year)</th>
+                  <th>Investments A</th>
+                  <th>Investments B</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </section>
+
+        <footer class="footer">
+          <p id="disclaimer"></p>
+          <p id="privacy"></p>
+        </footer>
       </main>
     </div>
     <script type="module" src="/src/main.ts"></script>

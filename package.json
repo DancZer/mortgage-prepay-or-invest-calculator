@@ -4,7 +4,13 @@
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "check": "npm run format:check && npm run typecheck && npm run test:all && npm run licenses",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "dev": "vite --port 5173 --strictPort",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
@@ -24,6 +30,7 @@
     "@cucumber/cucumber": "^13.3.0",
     "@types/node": "^26.6.4",
     "license-checker-rseidelsohn": "^4.4.2",
+    "prettier": "^3.9.9",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.3",

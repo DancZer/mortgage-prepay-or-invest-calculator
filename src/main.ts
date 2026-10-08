@@ -1,5 +1,6 @@
 import {
   Chart,
+  Filler,
   Legend,
   LinearScale,
   LineController,
@@ -8,39 +9,101 @@ import {
   Tooltip,
   type Plugin,
 } from "chart.js";
-import { simulate, toYearMonth, type SimInputs, type SimResult } from "./calc";
-import { applyInput, defaultInputs, PARAMS, prepayMax } from "./params";
+import { toYearMonth } from "./calc";
+import { CURRENCIES, formatMoney, type CurrencyCode } from "./currency";
+import { applyInput, PARAMS, type NumericKey } from "./params";
+import { breakEvenReturn, runScenarios, type AppInputs, type Case, type Scenarios } from "./scenarios";
+import { browserStore, loadInputs, saveInputs } from "./storage";
 import {
   chartSeries,
+  DISCLAIMER,
   fmtMillions,
-  fmtMoney,
   formatParam,
   payoffMarker,
+  PRIVACY_NOTE,
   SERIES,
   summaryCards,
+  verdict,
   warningMessage,
   yearlyTable,
 } from "./view";
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend);
+Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, Filler);
 
-let inputs: SimInputs = defaultInputs();
+const store = browserStore();
+let inputs: AppInputs = loadInputs(store);
+let tableCase: Case = "worst";
 
-const controlsEl = document.querySelector<HTMLElement>("#controls")!;
-const cardsEl = document.querySelector<HTMLElement>("#cards")!;
-const warningEl = document.querySelector<HTMLElement>("#warning")!;
-const tbodyEl = document.querySelector<HTMLTableSectionElement>("#table tbody")!;
-const canvasEl = document.querySelector<HTMLCanvasElement>("#chart")!;
+const $ = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
+const controlsEl = $("#controls");
+const cardsEl = $("#cards");
+const verdictEl = $("#verdict");
+const warningEl = $("#warning");
+const tbodyEl = $<HTMLTableSectionElement>("#table tbody");
+const canvasEl = $<HTMLCanvasElement>("#chart");
 
-const sliderEls = new Map<keyof SimInputs, { input: HTMLInputElement; output: HTMLOutputElement }>();
+$("#disclaimer").textContent = DISCLAIMER;
+$("#privacy").textContent = PRIVACY_NOTE;
+
+/** Builds a row of toggle buttons; `onSelect` receives the chosen value. */
+function segmented<T extends string>(
+  container: HTMLElement,
+  options: [T, string][],
+  selected: T,
+  onSelect: (v: T) => void,
+) {
+  const render = (current: T) => {
+    container.replaceChildren(
+      ...options.map(([value, label]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", String(value === current));
+        button.addEventListener("click", () => {
+          render(value);
+          onSelect(value);
+        });
+        return button;
+      }),
+    );
+  };
+  render(selected);
+}
+
+segmented(
+  $("#currency"),
+  Object.values(CURRENCIES).map((c) => [c.code, `${c.code} (${c.label})`] as [CurrencyCode, string]),
+  inputs.currency,
+  (currency) => {
+    inputs = { ...inputs, currency };
+    syncSliders();
+    update();
+  },
+);
+
+segmented(
+  $("#table-case"),
+  [
+    ["worst", "Worst case"],
+    ["best", "Best case"],
+  ],
+  tableCase,
+  (c) => {
+    tableCase = c;
+    update();
+  },
+);
+
+const sliderEls = new Map<NumericKey, { input: HTMLInputElement; output: HTMLOutputElement }>();
 
 for (const def of PARAMS) {
   const row = document.createElement("label");
   row.className = "slider";
   row.innerHTML = `
     <span class="slider-label">${def.label}</span>
-    <output>${formatParam(def, def.defaultValue)}</output>
-    <input type="range" min="${def.min}" max="${def.max}" step="${def.step}" value="${def.defaultValue}" />`;
+    <output></output>
+    <input type="range" min="${def.min}" max="${def.max}" step="${def.step}" />`;
   const input = row.querySelector("input")!;
   const output = row.querySelector("output")!;
   sliderEls.set(def.key, { input, output });
@@ -52,13 +115,12 @@ for (const def of PARAMS) {
   controlsEl.append(row);
 }
 
-/** Reflects `inputs` back into the sliders (needed when one change clamps another). */
+/** Reflects `inputs` back into the sliders (needed when one change moves another, or on load). */
 function syncSliders() {
-  sliderEls.get("prepay")!.input.max = String(prepayMax(inputs));
   for (const def of PARAMS) {
     const { input, output } = sliderEls.get(def.key)!;
     if (Number(input.value) !== inputs[def.key]) input.value = String(inputs[def.key]);
-    output.textContent = formatParam(def, inputs[def.key]);
+    output.textContent = formatParam(def, inputs);
   }
 }
 syncSliders();
@@ -101,8 +163,10 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
       label: s.label,
       data: [],
       borderColor: color(s.colorVar),
-      backgroundColor: color(s.colorVar),
+      backgroundColor: s.fillToPrevious ? color(`${s.colorVar}-band`) : color(s.colorVar),
       borderDash: s.dashed ? [6, 4] : [],
+      borderWidth: s.key === "loanB" ? 2 : 1.5,
+      fill: s.fillToPrevious ? "-1" : false,
     })),
   },
   options: {
@@ -110,13 +174,14 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
     maintainAspectRatio: false,
     animation: false,
     parsing: false,
-    elements: { point: { radius: 0, hitRadius: 6 }, line: { borderWidth: 2 } },
+    elements: { point: { radius: 0, hitRadius: 6 } },
     interaction: { mode: "index", intersect: false },
     scales: {
       x: { type: "linear", min: 0, title: { display: true, text: "Years elapsed" }, ticks: { stepSize: 1 } },
       y: { ticks: { callback: (v) => fmtMillions(Number(v)) } },
     },
     plugins: {
+      legend: { labels: { boxHeight: 2 } },
       tooltip: {
         callbacks: {
           title: (items) => {
@@ -125,7 +190,7 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
             const ym = toYearMonth(m);
             return `Year ${ym.year}, month ${ym.month}`;
           },
-          label: (ctx) => `${ctx.dataset.label}: ${fmtMoney(ctx.parsed.y ?? 0)}`,
+          label: (ctx) => `${ctx.dataset.label}: ${formatMoney(ctx.parsed.y ?? 0, inputs.currency)}`,
         },
       },
     },
@@ -133,28 +198,51 @@ const chart = new Chart<"line", Point[]>(canvasEl, {
   plugins: [payoffLine],
 });
 
-function renderCards(res: SimResult) {
-  cardsEl.innerHTML = summaryCards(res)
+const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+
+function renderCards(sc: Scenarios) {
+  const be = breakEvenReturn(inputs);
+  cardsEl.innerHTML = summaryCards(inputs, sc, be)
     .map(
       (c) => `
     <div class="card">
-      <span>${c.title}</span><strong${c.tone ? ` class="${c.tone}"` : ""}>${c.value}</strong>
-      ${c.notes.map((n) => `<small>${n}</small>`).join("")}
+      <span>${escapeHtml(c.title)}</span>
+      ${c.lines
+        .map(
+          (l) => `<div class="card-line">${l.label ? `<small>${escapeHtml(l.label)}</small>` : ""}
+            <strong${c.tone ? ` class="${c.tone}"` : ""}>${escapeHtml(l.value)}</strong></div>`,
+        )
+        .join("")}
+      ${c.notes.map((n) => `<small>${escapeHtml(n)}</small>`).join("")}
     </div>`,
     )
     .join("");
+  verdictEl.textContent = verdict(inputs, sc, be);
 }
 
-function renderTable(res: SimResult) {
+function renderTable(sc: Scenarios) {
+  const money = (v: number) => formatMoney(v, inputs.currency);
   tbodyEl.replaceChildren(
-    ...yearlyTable(res).map((r) => {
+    ...yearlyTable(sc[tableCase]).map((r) => {
       const tr = document.createElement("tr");
       if (r.isPayoffYear) tr.className = "payoff";
-      const cells = [String(r.year), r.extra, r.netA, r.netB, r.diff, r.loanA, r.loanB, r.investedB, r.invA, r.invB];
+      const cells = [
+        String(r.year),
+        r.extra,
+        r.property,
+        r.netA,
+        r.netB,
+        r.diff,
+        r.loanA,
+        r.loanB,
+        r.investedB,
+        r.invA,
+        r.invB,
+      ];
       cells.forEach((c, i) => {
         const td = document.createElement("td");
-        td.textContent = typeof c === "number" ? fmtMoney(c) : c;
-        if (i === 4 && typeof c === "number" && c < 0) td.className = "neg";
+        td.textContent = typeof c === "number" ? money(c) : c;
+        if (i === 5 && typeof c === "number" && c < 0) td.className = "neg";
         tr.append(td);
       });
       return tr;
@@ -163,19 +251,20 @@ function renderTable(res: SimResult) {
 }
 
 function update() {
-  const res = simulate(inputs);
+  saveInputs(store, inputs);
+  const sc = runScenarios(inputs);
 
   const warning = warningMessage(inputs);
   warningEl.hidden = warning === null;
   warningEl.textContent = warning ?? "";
 
-  marker = payoffMarker(res);
+  marker = payoffMarker(sc.worst);
   chart.options.scales!.x!.max = inputs.years;
-  chartSeries(res).forEach((s, i) => (chart.data.datasets[i].data = s.points));
+  chartSeries(sc).forEach((s, i) => (chart.data.datasets[i].data = s.points));
   chart.update();
 
-  renderCards(res);
-  renderTable(res);
+  renderCards(sc);
+  renderTable(sc);
 }
 
 update();

@@ -1,13 +1,18 @@
-export interface SimInputs {
-  /** Initial loan amount, also used as the property value. */
-  initial: number;
+/** Inputs for one run of the model, with a single investment return. */
+export interface ModelInputs {
+  /** Initial loan amount. */
+  loan: number;
+  /** Property value at the start. */
+  property: number;
+  /** Annual property value growth, %. */
+  appr: number;
   /** Fixed monthly mortgage installment. */
   installment: number;
   /** Total monthly extra savings in year 1 (grows with `inf`). */
   extra: number;
-  /** Part of `extra` used for prepayment in year 1 (grows with `inf`, capped at current extra). */
-  prepay: number;
-  /** Annual growth of extra savings and prepayment budget, %. */
+  /** Share of the extra savings Path B uses for prepayment, % (0–100). */
+  prepayPct: number;
+  /** Annual growth of the extra savings, %. */
   inf: number;
   /** Annual investment return, %. */
   inv: number;
@@ -17,14 +22,18 @@ export interface SimInputs {
   penalty: number;
   /** Simulation horizon in years. */
   years: number;
+  /** Decimals of the currency's smallest unit; every monthly amount is rounded to it. */
+  decimals: number;
 }
 
 export interface MonthRow {
   month: number;
   /** Inflation-adjusted monthly extra savings in effect this month (0 for month 0). */
   extra: number;
-  /** Inflation-adjusted prepayment budget this month, capped at `extra` (0 for month 0). */
+  /** Path B's prepayment budget this month (0 for month 0). */
   prepay: number;
+  /** Property value at the end of the month. */
+  property: number;
   loanA: number;
   /** Money paid into the Path A investments this month (before returns). */
   contribA: number;
@@ -48,86 +57,100 @@ export interface SimResult {
 /**
  * Month-by-month simulation of two strategies:
  * - Path A: pay the baseline installment, invest all extra savings.
- * - Path B: put `prepay` of the extra savings toward the loan (minus penalty), invest the rest.
+ * - Path B: put `prepayPct` of the extra savings toward the loan (minus penalty), invest the rest.
  * In both paths, money the bank doesn't need in the payoff month is invested, and after payoff
  * the installment + full extra is invested every month.
  * Contributions are invested at the start of the month, then the month's return is applied.
+ * Net wealth = property value + investments − remaining loan.
+ *
+ * All amounts are kept as integers in the currency's smallest unit (e.g. cents), so every
+ * monthly interest, return and payment is rounded the way a bank statement would be.
  */
-export function simulate(p: SimInputs): SimResult {
+export function simulate(p: ModelInputs): SimResult {
+  const unit = Math.pow(10, p.decimals);
+  const toMinor = (x: number) => Math.round(x * unit);
+  const fromMinor = (x: number) => x / unit;
+
   const rm = p.mort / 100 / 12;
   const ri = p.inv / 100 / 12;
   const g = p.inf / 100;
   const penaltyFactor = 1 + p.penalty / 100;
+  const share = Math.min(Math.max(p.prepayPct, 0), 100) / 100;
+  const installment = toMinor(p.installment);
   const totalMonths = Math.round(p.years * 12);
 
-  let loanA = p.initial;
+  let loanA = toMinor(p.loan);
+  let loanB = loanA;
   let invA = 0;
-  let loanB = p.initial;
   let invB = 0;
   let payoffMonthA: number | null = null;
   let payoffMonthB: number | null = null;
 
-  const rows: MonthRow[] = [
-    { month: 0, extra: 0, prepay: 0, loanA, contribA: 0, invA, netA: p.initial - loanA, loanB, contribB: 0, invB, netB: p.initial - loanB },
-  ];
+  const row = (month: number, extra: number, prepay: number, property: number, contribA: number, contribB: number) => ({
+    month,
+    extra: fromMinor(extra),
+    prepay: fromMinor(prepay),
+    property: fromMinor(property),
+    loanA: fromMinor(loanA),
+    contribA: fromMinor(contribA),
+    invA: fromMinor(invA),
+    netA: fromMinor(property + invA - loanA),
+    loanB: fromMinor(loanB),
+    contribB: fromMinor(contribB),
+    invB: fromMinor(invB),
+    netB: fromMinor(property + invB - loanB),
+  });
+
+  const rows: MonthRow[] = [row(0, 0, 0, toMinor(p.property), 0, 0)];
 
   for (let m = 1; m <= totalMonths; m++) {
     const yearIndex = Math.floor((m - 1) / 12);
-    const growth = Math.pow(1 + g, yearIndex);
-    const curExtra = p.extra * growth;
-    const curPrepay = Math.min(p.prepay * growth, curExtra);
+    const curExtra = toMinor(p.extra * Math.pow(1 + g, yearIndex));
+    const curPrepay = Math.round(curExtra * share);
     const curInvExtra = curExtra - curPrepay;
+    const property = toMinor(p.property * Math.pow(1 + p.appr / 100, m / 12));
 
     // Path A
-    let toInvestA: number;
+    let contribA: number;
     if (loanA > 0) {
-      const owed = loanA + loanA * rm;
+      const owed = loanA + Math.round(loanA * rm);
       // In the payoff month the part of the installment the bank doesn't need is invested.
-      const installmentUsed = Math.min(p.installment, owed);
+      const installmentUsed = Math.min(installment, owed);
       loanA = owed - installmentUsed;
-      if (loanA <= 1e-6) {
-        loanA = 0;
-        payoffMonthA = m;
-      }
-      toInvestA = curExtra + (p.installment - installmentUsed);
+      if (loanA === 0) payoffMonthA = m;
+      contribA = curExtra + (installment - installmentUsed);
     } else {
-      toInvestA = p.installment + curExtra;
+      contribA = installment + curExtra;
     }
-    invA = (invA + toInvestA) * (1 + ri);
+    invA += contribA;
+    invA += Math.round(invA * ri);
 
     // Path B
-    let toInvestB: number;
+    let contribB: number;
     if (loanB > 0) {
-      const owed = loanB + loanB * rm;
+      const owed = loanB + Math.round(loanB * rm);
       // The installment is applied first; the prepayment covers what is left, net of penalty.
       // In the payoff month any money not needed by the bank is invested instead.
-      const installmentUsed = Math.min(p.installment, owed);
-      const prepayCashUsed = Math.min(curPrepay, (owed - installmentUsed) * penaltyFactor);
-      loanB = owed - installmentUsed - prepayCashUsed / penaltyFactor;
-      if (loanB <= 1e-6) {
+      const installmentUsed = Math.min(installment, owed);
+      const remaining = owed - installmentUsed;
+      const netPrepay = Math.round(curPrepay / penaltyFactor);
+      let prepayCashUsed: number;
+      if (netPrepay >= remaining) {
+        prepayCashUsed = Math.min(curPrepay, Math.round(remaining * penaltyFactor));
         loanB = 0;
-        payoffMonthB = m;
+      } else {
+        prepayCashUsed = curPrepay;
+        loanB = remaining - netPrepay;
       }
-      const unused = p.installment - installmentUsed + (curPrepay - prepayCashUsed);
-      toInvestB = curInvExtra + unused;
+      if (loanB === 0) payoffMonthB = m;
+      contribB = curInvExtra + (installment - installmentUsed) + (curPrepay - prepayCashUsed);
     } else {
-      toInvestB = p.installment + curExtra;
+      contribB = installment + curExtra;
     }
-    invB = (invB + toInvestB) * (1 + ri);
+    invB += contribB;
+    invB += Math.round(invB * ri);
 
-    rows.push({
-      month: m,
-      extra: curExtra,
-      prepay: curPrepay,
-      loanA,
-      contribA: toInvestA,
-      invA,
-      netA: p.initial + invA - loanA,
-      loanB,
-      contribB: toInvestB,
-      invB,
-      netB: p.initial + invB - loanB,
-    });
+    rows.push(row(m, curExtra, curPrepay, property, contribA, contribB));
   }
 
   return { rows, payoffMonthA, payoffMonthB };
@@ -144,6 +167,6 @@ export function elapsedTime(month: number): { years: number; months: number } {
 }
 
 /** True when the installment does not even cover the first month's interest. */
-export function installmentTooLow(p: Pick<SimInputs, "initial" | "installment" | "mort">): boolean {
-  return p.installment <= p.initial * (p.mort / 100 / 12);
+export function installmentTooLow(p: Pick<ModelInputs, "loan" | "installment" | "mort">): boolean {
+  return p.installment <= p.loan * (p.mort / 100 / 12);
 }

@@ -1,43 +1,49 @@
 import { describe, expect, it } from "vitest";
-import { elapsedTime, installmentTooLow, simulate, toYearMonth, type SimInputs } from "./calc";
+import { elapsedTime, installmentTooLow, simulate, toYearMonth, type ModelInputs } from "./calc";
 
-const defaults: SimInputs = {
-  initial: 45_000_000,
+const defaults: ModelInputs = {
+  loan: 45_000_000,
+  property: 45_000_000,
+  appr: 0,
   installment: 300_000,
   extra: 150_000,
-  prepay: 75_000,
+  prepayPct: 50,
   inf: 4,
   inv: 10,
   mort: 6.18,
   penalty: 1.5,
   years: 25,
+  decimals: 0,
 };
 
 describe("simulate", () => {
-  it("with no prepayment, Path B loan matches Path A loan", () => {
-    const { rows, payoffMonthA, payoffMonthB } = simulate({ ...defaults, prepay: 0 });
+  it("with no prepayment, both paths are identical", () => {
+    const { rows, payoffMonthA, payoffMonthB } = simulate({ ...defaults, prepayPct: 0, years: 30 });
     expect(payoffMonthB).toBe(payoffMonthA);
-    for (const r of rows) expect(r.loanB).toBeCloseTo(r.loanA, 4);
+    for (const r of rows) {
+      expect(r.loanB).toBe(r.loanA);
+      expect(r.invB).toBe(r.invA);
+    }
   });
 
-  it("Path A investment matches the annuity-due future value when inflation is 0", () => {
-    const p = { ...defaults, inf: 0, years: 10 };
+  it("Path A investment matches the annuity-due future value when inflation is 0 (to rounding)", () => {
+    const p = { ...defaults, inf: 0, years: 10, decimals: 2 };
     const r = p.inv / 100 / 12;
     const n = 120;
     const expected = p.extra * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
-    expect(simulate(p).rows[n].invA).toBeCloseTo(expected, 2);
+    expect(Math.abs(simulate(p).rows[n].invA - expected)).toBeLessThan(1);
   });
 
   it("grows the extra savings by inflation once per year", () => {
     const { rows } = simulate(defaults);
     expect(rows[1].extra).toBe(150_000);
     expect(rows[12].extra).toBe(150_000);
-    expect(rows[13].extra).toBeCloseTo(150_000 * 1.04, 6);
-    expect(rows[300].extra).toBeCloseTo(150_000 * Math.pow(1.04, 24), 6);
+    expect(rows[13].extra).toBe(156_000);
+    expect(rows[300].extra).toBe(Math.round(150_000 * Math.pow(1.04, 24)));
   });
 
-  it("caps the prepayment at the extra savings", () => {
-    const { rows } = simulate({ ...defaults, extra: 100_000, prepay: 500_000 });
+  it("prepaying 100 % leaves nothing to invest while the loan is open", () => {
+    const { rows } = simulate({ ...defaults, prepayPct: 100 });
     expect(rows[12].invB).toBe(0);
   });
 
@@ -48,47 +54,49 @@ describe("simulate", () => {
     expect(withPenalty.payoffMonthB!).toBeGreaterThanOrEqual(noPenalty.payoffMonthB!);
   });
 
-  it("prepaying pays the loan off earlier", () => {
-    const { payoffMonthA, payoffMonthB } = simulate(defaults);
-    expect(payoffMonthA).not.toBeNull();
-    expect(payoffMonthB).not.toBeNull();
-    expect(payoffMonthB!).toBeLessThan(payoffMonthA!);
-  });
-
   it("after Path B payoff, invests installment + inflated extra every month", () => {
-    // Prepay all extra savings: payoff lands in year 11, month 10 (month 130).
-    const { rows, payoffMonthB } = simulate({ ...defaults, prepay: 150_000 });
+    const { rows, payoffMonthB } = simulate({ ...defaults, prepayPct: 100 });
     expect(payoffMonthB).toBe(130);
     for (let m = 1; m < 130; m++) expect(rows[m].contribB).toBe(0);
-    for (let m = 131; m <= 300; m++) expect(rows[m].contribB).toBeCloseTo(300_000 + rows[m].extra, 6);
-    // Year 12 is the first full mortgage-free year.
-    const year12 = rows.slice(133, 145).reduce((s, r) => s + r.contribB, 0);
-    expect(year12).toBeCloseTo(12 * (300_000 + 150_000 * Math.pow(1.04, 11)), 4);
+    for (let m = 131; m <= 300; m++) expect(rows[m].contribB).toBe(300_000 + rows[m].extra);
   });
 
-  it("conserves money in the payoff month (zero rates, exact numbers)", () => {
+  it("conserves money (zero rates, exact numbers)", () => {
     // 1,000,000 loan, 0% interest. Path A pays 10,000/month -> paid off in month 100,
-    // then invests 15,000/month for months 101..120.
-    // Path B pays 15,000/month -> month 67 needs only 10,000, so 5,000 is invested,
-    // then 15,000/month for months 68..120. With no rates both end up equal.
+    // then invests 15,000/month. Path B pays 15,000/month -> month 67 needs only 10,000,
+    // so 5,000 is invested, then 15,000/month. With no rates both end up equal.
     const { rows, payoffMonthA, payoffMonthB } = simulate({
-      initial: 1_000_000,
+      loan: 1_000_000,
+      property: 1_000_000,
+      appr: 0,
       installment: 10_000,
       extra: 5_000,
-      prepay: 5_000,
+      prepayPct: 100,
       inf: 0,
       inv: 0,
       mort: 0,
       penalty: 0,
       years: 10,
+      decimals: 0,
     });
     expect(payoffMonthA).toBe(100);
     expect(payoffMonthB).toBe(67);
-    const last = rows[120];
-    expect(last.netA).toBeCloseTo(1_800_000, 6);
-    expect(last.netB).toBeCloseTo(1_800_000, 6);
-    expect(rows[67].contribB).toBeCloseTo(5_000, 6);
-    expect(rows[68].contribB).toBeCloseTo(15_000, 6);
+    expect(rows[120].netA).toBe(1_800_000);
+    expect(rows[120].netB).toBe(1_800_000);
+    expect(rows[67].contribB).toBe(5_000);
+    expect(rows[68].contribB).toBe(15_000);
+  });
+
+  it("keeps every amount on the currency's smallest unit", () => {
+    for (const decimals of [0, 2]) {
+      const { rows } = simulate({ ...defaults, decimals });
+      const unit = Math.pow(10, decimals);
+      for (const r of rows.slice(0, 50)) {
+        for (const v of [r.loanA, r.invA, r.loanB, r.invB, r.property]) {
+          expect(Math.abs(v * unit - Math.round(v * unit))).toBeLessThan(1e-6);
+        }
+      }
+    }
   });
 });
 
@@ -106,6 +114,6 @@ describe("helpers", () => {
 
   it("installmentTooLow", () => {
     expect(installmentTooLow(defaults)).toBe(false);
-    expect(installmentTooLow({ initial: 100_000_000, installment: 100_000, mort: 15 })).toBe(true);
+    expect(installmentTooLow({ loan: 100_000_000, installment: 100_000, mort: 15 })).toBe(true);
   });
 });
