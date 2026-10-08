@@ -32,7 +32,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "appr",
-    label: "Property value growth / year",
+    label: "Property growth / year",
     min: 0,
     max: 10,
     step: 0.5,
@@ -69,7 +69,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "prepayPct",
-    label: "…of which prepayment (Path B)",
+    label: "…of which prepayment (B)",
     min: 0,
     max: 100,
     step: 5,
@@ -79,7 +79,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "inf",
-    label: "Annual savings growth / inflation",
+    label: "Savings growth / inflation",
     min: 0,
     max: 15,
     step: 0.5,
@@ -89,7 +89,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "invWorst",
-    label: "Investment return – worst case",
+    label: "Return – worst case",
     min: -5,
     max: 20,
     step: 0.1,
@@ -99,7 +99,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     key: "invBest",
-    label: "Investment return – best case",
+    label: "Return – best case",
     min: -5,
     max: 20,
     step: 0.1,
@@ -127,7 +127,7 @@ export const PARAMS: ParamDef[] = [
     unit: "percent",
     decimals: 1,
   },
-  { key: "years", label: "Time horizon (years)", min: 15, max: 30, step: 1, defaultValue: 25, unit: "years" },
+  { key: "years", label: "Time horizon", min: 15, max: 30, step: 1, defaultValue: 25, unit: "years" },
 ];
 
 export function paramDef(key: NumericKey): ParamDef {

@@ -34,7 +34,7 @@ body {
 
 .layout {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 360px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -100,14 +100,15 @@ h1 {
   font-size: 0.85rem;
 }
 
-/* Label on its own line; slider and its input field side by side below it. */
+/* Label and input field on one row; the slider spans the full width below them. */
 .slider-label {
-  grid-column: 1 / -1;
+  grid-row: 1;
+  grid-column: 1;
   color: var(--muted);
 }
 
 .field {
-  grid-row: 2;
+  grid-row: 1;
   grid-column: 2;
   display: inline-flex;
   align-items: center;
@@ -115,7 +116,7 @@ h1 {
 }
 
 .field .num {
-  width: 104px;
+  width: 96px;
   padding: 3px 6px;
   font: inherit;
   font-weight: 600;
@@ -138,13 +139,13 @@ h1 {
 }
 
 .field .unit {
-  min-width: 2.6em;
+  min-width: 2.2em;
   color: var(--muted);
 }
 
 .slider .range {
   grid-row: 2;
-  grid-column: 1;
+  grid-column: 1 / -1;
   min-width: 0;
   width: 100%;
   accent-color: var(--accent);
