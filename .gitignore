@@ -1,0 +1,23 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+
+# Editor / OS
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code personal settings
+.claude/settings.local.json

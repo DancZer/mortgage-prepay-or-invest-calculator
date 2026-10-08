@@ -1,0 +1,2 @@
+- [@kurkle/color@0.3.4](https://github.com/kurkle/color) - MIT
+- [chart.js@4.5.1](https://github.com/chartjs/Chart.js) - MIT
