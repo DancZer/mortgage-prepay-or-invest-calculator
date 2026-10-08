@@ -1,4 +1,4 @@
-# FinanceApp – Mortgage vs. Investment
+# Mortgage Prepay or Invest Calculator
 
 Should you prepay your mortgage or invest? This browser app compares two strategies with your own numbers:
 

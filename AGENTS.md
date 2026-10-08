@@ -1,4 +1,4 @@
-# FinanceApp – instructions for developers and AI coding agents
+# Mortgage Prepay or Invest Calculator – instructions for developers and AI coding agents
 
 This file is the single source of instructions for anyone (human or AI tool) working on this repo.
 Tool-specific files such as `CLAUDE.md` only point here. Keep it tool-neutral.
