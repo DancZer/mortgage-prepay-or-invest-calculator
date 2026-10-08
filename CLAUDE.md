@@ -1,6 +1,16 @@
 # FinanceApp
 
-Browser-based financial calculator: sliders → live chart + table. Will be sold commercially; source is proprietary.
+Mortgage vs. Investment wealth simulator: compares Path A (invest all extra savings) with Path B
+(prepay the mortgage with part of the savings, then invest everything after payoff). Sliders → live
+line chart, summary cards and a yearly table. Will be sold commercially; source is proprietary.
+
+## Simulation rules (src/calc.ts)
+- Monthly engine; extra savings and prepayment budget grow by `inf` each year; prepayment capped at extra.
+- Net wealth = initial (property value) + investments − remaining loan.
+- Prepayment penalty: only `prepay / (1 + penalty)` reaches principal.
+- Payoff month in Path B: money the bank doesn't need is invested (no double counting).
+- Path A does NOT redirect the installment after its own payoff (as per the original spec).
+- Currency/locale: `CURRENCY` / `LOCALE` constants in `src/main.ts` (HUF, hu-HU).
 
 ## Stack
 - TypeScript (strict), Vite, Chart.js (tree-shaken: register only the components used), Vitest.
@@ -8,8 +18,8 @@ Browser-based financial calculator: sliders → live chart + table. Will be sold
 
 ## Layout
 - `index.html` — page shell.
-- `src/calc.ts` — pure financial calculations (no DOM). Keep all math here and unit-test it in `src/*.test.ts`.
-- `src/main.ts` — sliders, chart, table, wiring.
+- `src/calc.ts` — pure simulation (`simulate`, no DOM). Keep all math here and unit-test it in `src/*.test.ts`.
+- `src/main.ts` — sidebar sliders, Chart.js line chart (with payoff marker plugin), cards, table.
 
 ## Commands
 - `npm run dev` — dev server (port 5173; also in `.claude/launch.json` as `dev`)

@@ -3,35 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Investment Calculator</title>
+    <title>Mortgage vs. Investment Simulator</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <main>
-      <h1>Investment Calculator</h1>
+    <div class="layout">
+      <aside class="sidebar">
+        <h1>Mortgage vs. Investment</h1>
+        <p class="lede">
+          <strong>Path A:</strong> invest all extra savings.<br />
+          <strong>Path B:</strong> prepay the mortgage with part of it, then invest everything once it's paid off.
+        </p>
+        <div class="controls" id="controls"></div>
+      </aside>
 
-      <section class="controls" id="controls"></section>
+      <main>
+        <div class="warning" id="warning" hidden></div>
 
-      <section class="summary" id="summary"></section>
+        <section class="cards" id="cards"></section>
 
-      <section class="chart-wrap">
-        <canvas id="chart"></canvas>
-      </section>
+        <section class="panel chart-wrap">
+          <canvas id="chart"></canvas>
+        </section>
 
-      <section class="table-wrap">
-        <table id="table">
-          <thead>
-            <tr>
-              <th>Year</th>
-              <th>Contributions</th>
-              <th>Growth</th>
-              <th>Balance</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </section>
-    </main>
+        <section class="panel table-wrap">
+          <table id="table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Net wealth A</th>
+                <th>Net wealth B</th>
+                <th>B − A</th>
+                <th>Loan A</th>
+                <th>Loan B</th>
+                <th>Investments A</th>
+                <th>Investments B</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

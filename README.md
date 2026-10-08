@@ -1,6 +1,13 @@
 # FinanceApp
 
-Interactive financial calculator in the browser: adjust parameters with sliders and see the results as a chart and a year-by-year table.
+Mortgage vs. Investment wealth maximization simulator. Compares two strategies over 15–30 years:
+
+- **Path A:** pay the baseline mortgage installment and invest all extra monthly savings.
+- **Path B:** use part of the extra savings for mortgage prepayments (after penalty), invest the rest;
+  once the mortgage is paid off, invest the freed-up installment plus all extra savings.
+
+Adjust the parameters with sliders and see net wealth (property + investments − loan) as a chart,
+summary cards and a year-by-year table.
 
 Built with TypeScript, [Vite](https://vite.dev) and [Chart.js](https://www.chartjs.org).
 

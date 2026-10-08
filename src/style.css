@@ -1,12 +1,16 @@
 :root {
-  --bg: #f7f8fa;
+  --bg: #f5f6f8;
   --surface: #ffffff;
   --text: #1c2430;
   --muted: #5b6676;
   --border: #e2e6ec;
   --accent: #2f6fde;
-  --series-1: #2f6fde;
-  --series-2: #1fa67a;
+  --series-a: #2f6fde;
+  --series-b: #1f9e6e;
+  --series-loan: #d64545;
+  --payoff-bg: #eaf6f0;
+  --warn-bg: #fff4e5;
+  --warn-border: #f0b860;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -21,37 +25,44 @@ body {
   background: var(--bg);
 }
 
-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
+.layout {
   display: grid;
-  gap: 20px;
+  grid-template-columns: 320px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 h1 {
-  margin: 0;
-  font-size: 1.6rem;
+  margin: 0 0 8px;
+  font-size: 1.3rem;
 }
 
-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
+.lede {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
 }
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px 24px;
+  gap: 16px;
 }
 
 .slider {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 6px;
-  font-size: 0.9rem;
+  gap: 4px 8px;
+  font-size: 0.85rem;
 }
 
 .slider-label {
@@ -69,33 +80,69 @@ section {
   accent-color: var(--accent);
 }
 
-.summary {
+main {
+  padding: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.warning {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
 }
 
-.summary div {
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
   display: grid;
   gap: 4px;
+  align-content: start;
 }
 
-.summary span {
+.card span,
+.card small {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
-.summary strong {
-  font-size: 1.4rem;
+.card strong {
+  font-size: 1.3rem;
   font-variant-numeric: tabular-nums;
 }
 
+.card strong.a {
+  color: var(--series-a);
+}
+
+.card strong.b {
+  color: var(--series-b);
+}
+
 .chart-wrap {
-  height: 360px;
+  height: 420px;
 }
 
 .table-wrap {
-  max-height: 400px;
+  max-height: 480px;
   overflow: auto;
   padding: 0;
 }
@@ -104,13 +151,15 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
 }
 
 th,
 td {
-  padding: 8px 16px;
+  padding: 7px 12px;
   text-align: right;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 th:first-child,
@@ -124,4 +173,30 @@ thead th {
   background: var(--surface);
   color: var(--muted);
   font-weight: 600;
+}
+
+tr.payoff td {
+  background: var(--payoff-bg);
+}
+
+td.neg {
+  color: var(--series-loan);
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+  }
+
+  main {
+    padding: 16px;
+  }
 }
