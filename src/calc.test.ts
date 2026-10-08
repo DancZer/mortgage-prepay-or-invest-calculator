@@ -28,6 +28,14 @@ describe("simulate", () => {
     expect(simulate(p).rows[n].invA).toBeCloseTo(expected, 2);
   });
 
+  it("grows the extra savings by inflation once per year", () => {
+    const { rows } = simulate(defaults);
+    expect(rows[1].extra).toBe(150_000);
+    expect(rows[12].extra).toBe(150_000);
+    expect(rows[13].extra).toBeCloseTo(150_000 * 1.04, 6);
+    expect(rows[300].extra).toBeCloseTo(150_000 * Math.pow(1.04, 24), 6);
+  });
+
   it("caps the prepayment at the extra savings", () => {
     const { rows } = simulate({ ...defaults, extra: 100_000, prepay: 500_000 });
     expect(rows[12].invB).toBe(0);

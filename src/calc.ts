@@ -21,6 +21,8 @@ export interface SimInputs {
 
 export interface MonthRow {
   month: number;
+  /** Inflation-adjusted monthly extra savings in effect this month (0 for month 0). */
+  extra: number;
   loanA: number;
   invA: number;
   netA: number;
@@ -59,7 +61,7 @@ export function simulate(p: SimInputs): SimResult {
   let payoffMonthB: number | null = null;
 
   const rows: MonthRow[] = [
-    { month: 0, loanA, invA, netA: p.initial - loanA, loanB, invB, netB: p.initial - loanB },
+    { month: 0, extra: 0, loanA, invA, netA: p.initial - loanA, loanB, invB, netB: p.initial - loanB },
   ];
 
   for (let m = 1; m <= totalMonths; m++) {
@@ -99,6 +101,7 @@ export function simulate(p: SimInputs): SimResult {
 
     rows.push({
       month: m,
+      extra: curExtra,
       loanA,
       invA,
       netA: p.initial + invA - loanA,

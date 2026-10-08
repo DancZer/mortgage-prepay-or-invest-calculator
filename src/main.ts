@@ -182,11 +182,11 @@ function renderTable(res: SimResult) {
       const year = r.month / 12;
       const tr = document.createElement("tr");
       if (year === payoffYear) tr.className = "payoff";
-      const cells = [String(year), r.netA, r.netB, r.netB - r.netA, r.loanA, r.loanB, r.invA, r.invB];
+      const cells = [String(year), r.extra, r.netA, r.netB, r.netB - r.netA, r.loanA, r.loanB, r.invA, r.invB];
       cells.forEach((c, i) => {
         const td = document.createElement("td");
         td.textContent = typeof c === "number" ? fmtMoney(c) : c;
-        if (i === 3 && typeof c === "number" && c < 0) td.className = "neg";
+        if (i === 4 && typeof c === "number" && c < 0) td.className = "neg";
         tr.append(td);
       });
       return tr;
