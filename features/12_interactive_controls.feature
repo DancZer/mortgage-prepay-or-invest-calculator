@@ -60,3 +60,8 @@ Feature: Interactive controls (checked by hand in the browser)
     Given the app is open in the browser
     Then the table row of the year Path B becomes mortgage-free is shaded grey, the colour of the dashed payoff line
     And it stays grey in the highlighted columns while I hover a final net wealth value
+
+  Scenario: The credits are at the bottom of the input panel
+    Given the app is open in a window wider than 860 pixels
+    Then the language switch is right below the sliders
+    And the credits are at the bottom of the input panel, also when the window is taller than the panel's content

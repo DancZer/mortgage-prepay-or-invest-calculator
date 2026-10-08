@@ -47,6 +47,13 @@ body {
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  /* Column layout so the credits can sit at the bottom of the panel. */
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar > * {
+  flex: none;
 }
 
 h1 {
@@ -386,7 +393,11 @@ td.neg {
   }
 }
 
-.sidebar-footer {
+/* Fills the rest of the panel: language switch at the top, credits pushed to the bottom. */
+.sidebar > .sidebar-footer {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
   margin-top: 28px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
@@ -397,7 +408,15 @@ td.neg {
   margin-bottom: 12px;
 }
 
+/* Button groups keep their natural width inside the column layouts. */
+.sidebar > .segmented,
+.sidebar-footer > .segmented {
+  align-self: flex-start;
+}
+
 .credits {
+  margin-top: auto;
+  padding-top: 16px;
   color: var(--muted);
   font-size: 0.75rem;
   line-height: 1.6;
