@@ -15,6 +15,7 @@ import {
   describePayoff,
   credits,
   formatParam,
+  highlightTargets,
   money,
   payoffMarker,
   summaryCards,
@@ -569,3 +570,46 @@ Then("the difference is shown in the colour of the path that is ahead:", functio
   assert.equal(toneName(card.lines[0].tone), expected["worst case"], "worst case colour");
   assert.equal(toneName(card.lines[1].tone), expected["best case"], "best case colour");
 });
+
+// ---------- Highlighting ----------
+
+When(/^I point at the (worst|best) value of Path (A|B)$/, function (this: SimWorld, scenario: string, path: string) {
+  const card = cards(this)[path === "A" ? 0 : 1];
+  const line = card.lines.find((l) => l.highlight?.scenario === scenario);
+  assert.ok(line?.highlight, `no ${scenario} value on the Path ${path} card`);
+  assert.equal(line.highlight.path, path);
+  this.pointed = line.highlight;
+});
+
+Then("the chart emphasises {string}", function (this: SimWorld, series: string) {
+  assert.ok(this.pointed, "nothing is pointed at");
+  const index = highlightTargets(this.pointed).seriesIndex;
+  assert.equal(chartSeries(this.scenarios, this.lang)[index].text, series);
+});
+
+Then(
+  /^the table shows the (worst|best) case with these columns highlighted:$/,
+  function (this: SimWorld, scenario: string, table: DataTable) {
+    assert.ok(this.pointed, "nothing is pointed at");
+    const targets = highlightTargets(this.pointed);
+    assert.equal(targets.tableCase, scenario);
+    const headers = STRINGS[this.lang].table.headers;
+    assert.deepEqual(
+      targets.columns.map((i) => headers[i]),
+      table
+        .raw()[0][0]
+        .split(",")
+        .map((c) => c.trim()),
+    );
+  },
+);
+
+Then(
+  "only the values of the {string} and {string} cards highlight a path",
+  function (this: SimWorld, first: string, second: string) {
+    for (const card of cards(this)) {
+      const expected = card.title === first || card.title === second;
+      for (const line of card.lines) assert.equal(Boolean(line.highlight), expected, `${card.title}: ${line.label}`);
+    }
+  },
+);

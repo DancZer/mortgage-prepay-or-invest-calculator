@@ -22,6 +22,7 @@ import {
   fmtMillions,
   formatInputValue,
   formatParam,
+  highlightTargets,
   inputHint,
   money,
   payoffMarker,
@@ -32,6 +33,8 @@ import {
   verdict,
   warningMessage,
   yearlyTable,
+  type Highlight,
+  type PathName,
 } from "./view";
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend, Filler);
@@ -311,7 +314,9 @@ function renderCards(sc: Scenarios) {
       <span>${escapeHtml(c.title)}</span>
       ${c.lines
         .map(
-          (l) => `<div class="card-line">${l.label ? `<small>${escapeHtml(l.label)}</small>` : ""}
+          (l) => `<div class="card-line"${
+            l.highlight ? ` tabindex="0" data-path="${l.highlight.path}" data-scenario="${l.highlight.scenario}"` : ""
+          }>${l.label ? `<small>${escapeHtml(l.label)}</small>` : ""}
             <strong${(l.tone ?? c.tone) ? ` class="${l.tone ?? c.tone}"` : ""}>${escapeHtml(l.value)}</strong></div>`,
         )
         .join("")}
@@ -322,9 +327,15 @@ function renderCards(sc: Scenarios) {
   verdictEl.textContent = verdict(inputs, sc, be, lang);
 }
 
-function renderTable(sc: Scenarios) {
+/** Renders the yearly table for `shownCase` and marks the highlighted path's columns, if any. */
+function renderTable(sc: Scenarios, shownCase: Case = tableCase, highlighted: Highlight | null = null) {
+  const columns = highlighted ? highlightTargets(highlighted).columns : [];
+  const hlClass = highlighted ? `hl-${highlighted.path.toLowerCase()}` : "";
+  [...$("#table-head").children].forEach((th, i) => th.classList.toggle("hl", columns.includes(i)));
+  $("#table-head").dataset.hl = hlClass;
+  tbodyEl.dataset.hl = hlClass;
   tbodyEl.replaceChildren(
-    ...yearlyTable(sc[tableCase]).map((r) => {
+    ...yearlyTable(sc[shownCase]).map((r) => {
       const tr = document.createElement("tr");
       if (r.isPayoffYear) tr.className = "payoff";
       const cells = [
@@ -344,6 +355,7 @@ function renderTable(sc: Scenarios) {
         const td = document.createElement("td");
         td.textContent = typeof c === "number" ? money(c, inputs.currency, lang) : c;
         if (i === 5 && typeof c === "number" && c < 0) td.className = "neg";
+        if (columns.includes(i)) td.classList.add("hl");
         tr.append(td);
       });
       return tr;
@@ -351,9 +363,54 @@ function renderTable(sc: Scenarios) {
   );
 }
 
+let lastScenarios: Scenarios | null = null;
+
+/** Chart styles as configured, so a highlight can be undone. */
+const baseStyles = chart.data.datasets.map((d) => ({
+  borderColor: d.borderColor as string,
+  backgroundColor: d.backgroundColor as string,
+  borderWidth: d.borderWidth as number,
+}));
+
+/** Emphasises one path and case in the chart and table (or restores everything for null). */
+function applyHighlight(h: Highlight | null) {
+  const target = h ? highlightTargets(h) : null;
+  chart.data.datasets.forEach((d, i) => {
+    const base = baseStyles[i];
+    const faded = target !== null && i !== target.seriesIndex;
+    d.borderColor = faded ? `${base.borderColor}40` : base.borderColor; // 40 = 25 % opacity
+    d.backgroundColor = target ? "transparent" : base.backgroundColor;
+    d.borderWidth = target && i === target.seriesIndex ? 3.5 : base.borderWidth;
+  });
+  chart.update("none");
+  const shown = target?.tableCase ?? tableCase;
+  if (lastScenarios) renderTable(lastScenarios, shown, h);
+  // Keep the Worst/Best switch in step with the case the table shows.
+  $("#table-case")
+    .querySelectorAll("button")
+    .forEach((b, i) => b.setAttribute("aria-checked", String((i === 0 ? "worst" : "best") === shown)));
+}
+
+function highlightOf(el: EventTarget | null): Highlight | null {
+  const line = (el as HTMLElement | null)?.closest<HTMLElement>(".card-line[data-path]");
+  return line ? { path: line.dataset.path as PathName, scenario: line.dataset.scenario as Case } : null;
+}
+
+// Hovering or focusing a result value highlights its path in the chart and the table.
+cardsEl.addEventListener("mouseover", (e) => {
+  const h = highlightOf(e.target);
+  if (h) applyHighlight(h);
+});
+cardsEl.addEventListener("mouseout", (e) => {
+  if (highlightOf(e.target) && !highlightOf(e.relatedTarget)) applyHighlight(null);
+});
+cardsEl.addEventListener("focusin", (e) => applyHighlight(highlightOf(e.target)));
+cardsEl.addEventListener("focusout", () => applyHighlight(null));
+
 function update() {
   saveInputs(store, inputs);
   const sc = runScenarios(inputs);
+  lastScenarios = sc;
 
   const warning = warningMessage(inputs, lang);
   warningEl.hidden = warning === null;

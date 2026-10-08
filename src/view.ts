@@ -92,6 +92,15 @@ export interface CardLine {
   value: string;
   /** Colour of the value; overrides the card's tone. */
   tone?: "a" | "b";
+  /** Path and case to highlight in the chart and table while this value is hovered or focused. */
+  highlight?: Highlight;
+}
+
+export type PathName = "A" | "B";
+
+export interface Highlight {
+  path: PathName;
+  scenario: Case;
 }
 
 export interface Card {
@@ -118,10 +127,21 @@ export function describeBreakEven(be: BreakEven, lang: Language): string {
 
 export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language): Card[] {
   const t = STRINGS[lang].cards;
-  const caseLines = (key: "netA" | "netB") => [
-    { label: t.worstCase(fmtPct(a.invWorst, lang)), value: money(final(sc.worst)[key], a.currency, lang) },
-    { label: t.bestCase(fmtPct(a.invBest, lang)), value: money(final(sc.best)[key], a.currency, lang) },
-  ];
+  const caseLines = (key: "netA" | "netB") => {
+    const path: PathName = key === "netA" ? "A" : "B";
+    return [
+      {
+        label: t.worstCase(fmtPct(a.invWorst, lang)),
+        value: money(final(sc.worst)[key], a.currency, lang),
+        highlight: { path, scenario: "worst" as Case },
+      },
+      {
+        label: t.bestCase(fmtPct(a.invBest, lang)),
+        value: money(final(sc.best)[key], a.currency, lang),
+        highlight: { path, scenario: "best" as Case },
+      },
+    ];
+  };
   // The loan does not depend on the investment return, so either scenario gives the payoff dates.
   const { payoffMonthA, payoffMonthB } = sc.worst;
   return [
@@ -219,6 +239,31 @@ export function chartSeries(sc: Scenarios, lang: Language): ChartSeries[] {
 export function payoffMarker(res: SimResult, lang: Language): { x: number; label: string } | null {
   if (res.payoffMonthB === null || res.payoffMonthB === 0) return null;
   return { x: res.payoffMonthB / 12, label: STRINGS[lang].chart.marker(describePayoff(res.payoffMonthB, lang)) };
+}
+
+/** Table columns (indexes into the header row) that belong to each path. */
+export const PATH_COLUMNS: Record<PathName, number[]> = {
+  A: [3, 6, 9], // Net wealth A, Loan A, Investments A
+  B: [4, 7, 8, 10], // Net wealth B, Loan B, Invested B (year), Investments B
+};
+
+export interface HighlightTargets {
+  /** Index into SERIES of the line to emphasise; all other lines are faded. */
+  seriesIndex: number;
+  /** Table columns to highlight. */
+  columns: number[];
+  /** Case the table shows while highlighting. */
+  tableCase: Case;
+}
+
+/** What to emphasise in the chart and table for a hovered result value. */
+export function highlightTargets(h: Highlight): HighlightTargets {
+  const key = h.path === "A" ? "netA" : "netB";
+  return {
+    seriesIndex: SERIES.findIndex((s) => s.key === key && s.scenario === h.scenario),
+    columns: PATH_COLUMNS[h.path],
+    tableCase: h.scenario,
+  };
 }
 
 export interface TableRow {

@@ -1,6 +1,7 @@
 import { setWorldConstructor, World, type IWorldOptions } from "@cucumber/cucumber";
 import type { SimResult } from "../../src/calc";
 import type { Language } from "../../src/i18n";
+import type { Highlight } from "../../src/view";
 import { defaultInputs, defaultMaxes, type Maxes } from "../../src/params";
 import { breakEvenReturn, runScenarios, type AppInputs, type BreakEven, type Scenarios } from "../../src/scenarios";
 import type { KeyValueStore } from "../../src/storage";
@@ -30,6 +31,8 @@ export class SimWorld extends World {
   /** Inputs just before the last typed value, to check that a rejected value changed nothing. */
   inputsBeforeTyping: AppInputs | null = null;
   store = new MemoryStore();
+  /** Result value the user points at (hover or keyboard focus), if any. */
+  pointed: Highlight | null = null;
   private cached: Scenarios | null = null;
 
   constructor(options: IWorldOptions) {

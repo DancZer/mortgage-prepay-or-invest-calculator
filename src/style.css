@@ -361,3 +361,30 @@ td.neg {
 .credits a {
   color: var(--accent);
 }
+
+/* Values that highlight their path in the chart and table on hover or keyboard focus. */
+.card-line[data-path] {
+  cursor: default;
+  border-radius: 6px;
+  margin-inline: -4px;
+  padding-inline: 4px;
+}
+
+.card-line[data-path]:hover,
+.card-line[data-path]:focus-visible {
+  background: var(--bg);
+  outline: none;
+}
+
+[data-hl="hl-a"] .hl {
+  background: var(--series-a-band);
+}
+
+[data-hl="hl-b"] .hl {
+  background: var(--series-b-band);
+}
+
+thead[data-hl] th.hl,
+thead th.hl {
+  color: var(--text);
+}

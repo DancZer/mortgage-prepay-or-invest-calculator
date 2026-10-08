@@ -41,3 +41,10 @@ Feature: Interactive controls (checked by hand in the browser)
   Scenario: The disclaimer and privacy note are always visible below the results
     Given the app is open in the browser
     Then the page says it is not financial advice and that inputs stay in the browser
+
+  Scenario: Hovering a final net wealth value highlights its path
+    Given the app is open in the browser
+    When I move the mouse over the best-case value of Path A (or tab to it with the keyboard)
+    Then the "Path A – best case" chart line is drawn thicker and all other lines fade
+    And the table shows the best case with the Path A columns shaded blue
+    And when I move the mouse away everything returns to how it was

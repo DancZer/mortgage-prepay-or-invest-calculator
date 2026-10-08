@@ -128,3 +128,25 @@ Feature: Dashboard – cards, verdict, chart and yearly table
       And the best-case yearly table is:
         | year | investments A |
         | 1    | 653 277       |
+
+  Rule: Pointing at a final net wealth value highlights that path in the chart and the table
+    Hovering with the mouse or focusing with the keyboard emphasises the matching chart line (all
+    other lines fade) and highlights the path's columns in the table. The table temporarily shows
+    the pointed case; everything returns to normal afterwards.
+
+    Scenario Outline: Highlighting a path and case
+      When I point at the <case> value of Path <path>
+      Then the chart emphasises "<series>"
+      And the table shows the <case> case with these columns highlighted:
+        | <columns> |
+
+      Examples:
+        | path | case  | series              | columns                                                      |
+        | A    | worst | Path A – worst case | Net wealth A, Loan A, Investments A                          |
+        | A    | best  | Path A – best case  | Net wealth A, Loan A, Investments A                          |
+        | B    | worst | Path B – worst case | Net wealth B, Loan B, Invested B (year), Investments B       |
+        | B    | best  | Path B – best case  | Net wealth B, Loan B, Invested B (year), Investments B       |
+
+    Scenario: Only the final net wealth values highlight a path
+      When I run the simulation
+      Then only the values of the "Path A final net wealth" and "Path B final net wealth" cards highlight a path
