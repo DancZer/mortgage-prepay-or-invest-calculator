@@ -139,12 +139,89 @@ export function defaultInputs(): AppInputs {
   return { ...numeric, currency: DEFAULT_CURRENCY } as AppInputs;
 }
 
-/** True when the value is within the slider's range and on its step grid. */
-export function isValidValue(def: ParamDef, value: unknown): value is number {
+/**
+ * Highest value that can be typed in. Slider maximums are only a starting point (see `extendedMax`);
+ * these limits keep the model meaningful and within safe number ranges.
+ */
+export function hardMax(def: ParamDef): number {
+  if (def.key === "prepayPct") return 100;
+  if (def.unit === "money") return 1_000_000_000_000;
+  return 100; // percentages and years
+}
+
+/** Decimals a typed value may have: whole currency units and years, percentages to 0.01. */
+export function inputDecimals(def: ParamDef): number {
+  return def.unit === "percent" ? 2 : 0;
+}
+
+/** True when the value may be used: a number between the minimum and the hard maximum, with allowed decimals. */
+export function isAllowedValue(def: ParamDef, value: unknown): value is number {
   if (typeof value !== "number" || !Number.isFinite(value)) return false;
-  if (value < def.min || value > def.max) return false;
-  const steps = (value - def.min) / def.step;
-  return Math.abs(steps - Math.round(steps)) < 1e-6;
+  if (value < def.min || value > hardMax(def)) return false;
+  const scaled = value * Math.pow(10, inputDecimals(def));
+  return Math.abs(scaled - Math.round(scaled)) < 1e-6;
+}
+
+/** Current maximum of every slider. */
+export type Maxes = Record<NumericKey, number>;
+
+export function defaultMaxes(): Maxes {
+  return Object.fromEntries(PARAMS.map((p) => [p.key, p.max])) as Maxes;
+}
+
+/**
+ * New slider maximum for a value above the current one: the value + 10 %, rounded up to the
+ * slider's step grid, so the value never sits at the very end of the slider (decision 0011).
+ */
+export function extendedMax(def: ParamDef, value: number): number {
+  // The small tolerance stops floating-point noise (20 × 1.1 = 22.000000000000004) adding a step.
+  const steps = Math.ceil((value * 1.1 - def.min) / def.step - 1e-6);
+  const max = Number((def.min + steps * def.step).toFixed(10));
+  return Math.min(max, hardMax(def));
+}
+
+/** Extends any slider whose value is above its current maximum. Maximums never shrink. */
+export function fitMaxes(inputs: AppInputs, maxes: Maxes): Maxes {
+  const next = { ...maxes };
+  for (const def of PARAMS) {
+    if (inputs[def.key] > next[def.key]) next[def.key] = extendedMax(def, inputs[def.key]);
+  }
+  return next;
+}
+
+/** Slider maximums for inputs loaded at start-up (e.g. saved values above the default maximum). */
+export function initialMaxes(inputs: AppInputs): Maxes {
+  return fitMaxes(inputs, defaultMaxes());
+}
+
+/** Parses typed text: accepts spaces as thousand separators and a decimal comma or point. */
+export function parseTyped(text: string): number | null {
+  const cleaned = text
+    .replace(/[\s  ]/g, "")
+    .replace(",", ".")
+    .replace("−", "-");
+  return /^-?\d+(\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
+}
+
+export type TypedError =
+  { kind: "notNumber" } | { kind: "belowMin"; limit: number } | { kind: "aboveMax"; limit: number };
+
+export type TypedResult = { ok: true; inputs: AppInputs; maxes: Maxes } | { ok: false; error: TypedError };
+
+/**
+ * Applies a value typed into a field. It is rounded to the allowed decimals, must be at least the
+ * slider minimum and at most the hard maximum; a value above the slider maximum extends the slider.
+ */
+export function applyTypedValue(inputs: AppInputs, maxes: Maxes, key: NumericKey, text: string): TypedResult {
+  const def = paramDef(key);
+  const parsed = parseTyped(text);
+  if (parsed === null) return { ok: false, error: { kind: "notNumber" } };
+  const factor = Math.pow(10, inputDecimals(def));
+  const value = Math.round(parsed * factor) / factor;
+  if (value < def.min) return { ok: false, error: { kind: "belowMin", limit: def.min } };
+  if (value > hardMax(def)) return { ok: false, error: { kind: "aboveMax", limit: hardMax(def) } };
+  const next = applyInput(inputs, key, value);
+  return { ok: true, inputs: next, maxes: fitMaxes(next, maxes) };
 }
 
 /**

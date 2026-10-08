@@ -95,23 +95,73 @@ h1 {
 .slider {
   display: grid;
   grid-template-columns: 1fr auto;
+  align-items: center;
   gap: 4px 8px;
   font-size: 0.85rem;
 }
 
+/* Label on its own line; slider and its input field side by side below it. */
 .slider-label {
+  grid-column: 1 / -1;
   color: var(--muted);
 }
 
-.slider output {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+.field {
+  grid-row: 2;
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.slider input {
-  grid-column: 1 / -1;
+.field .num {
+  width: 104px;
+  padding: 3px 6px;
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.field .num:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.field .num.invalid {
+  border-color: var(--series-loan);
+  outline-color: var(--series-loan);
+}
+
+.field .unit {
+  min-width: 2.6em;
+  color: var(--muted);
+}
+
+.slider .range {
+  grid-row: 2;
+  grid-column: 1;
+  min-width: 0;
   width: 100%;
   accent-color: var(--accent);
+}
+
+.slider .hint,
+.slider .error {
+  grid-column: 1 / -1;
+  margin-top: -2px;
+}
+
+.slider .hint {
+  color: var(--muted);
+}
+
+.slider .error {
+  color: var(--series-loan);
 }
 
 main {

@@ -39,7 +39,7 @@ Static single-page app, no backend. Everything runs in the browser; inputs are k
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/calc.ts`      | Pure monthly simulation (`simulate`) for one investment return. All money is kept as integers in the currency's smallest unit, so every monthly amount is rounded like a bank statement. |
 | `src/scenarios.ts` | App inputs (worst/best return, currency), runs both scenarios, break-even return (bisection).                                                                                            |
-| `src/params.ts`    | Slider definitions (defaults, ranges, steps), `applyInput` (keeps worst ≤ best).                                                                                                         |
+| `src/params.ts`    | Slider definitions (defaults, ranges, steps), `applyInput` (keeps worst ≤ best), typed values and slider maximums (`applyTypedValue`, `fitMaxes`).                                       |
 | `src/currency.ts`  | Currencies (HUF/EUR/USD), rounding digits, money formatting (only the symbol changes).                                                                                                   |
 | `src/storage.ts`   | Save/load inputs; invalid or old data falls back to defaults.                                                                                                                            |
 | `src/view.ts`      | Pure display logic: cards, verdict, chart series, payoff marker, yearly table, texts.                                                                                                    |

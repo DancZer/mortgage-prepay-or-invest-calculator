@@ -1,5 +1,5 @@
 import { DEFAULT_CURRENCY, isCurrencyCode } from "./currency";
-import { applyInput, defaultInputs, isValidValue, PARAMS } from "./params";
+import { applyInput, defaultInputs, isAllowedValue, PARAMS } from "./params";
 import type { AppInputs } from "./scenarios";
 
 /** Where the user's last inputs are kept in the browser. Bump the version if the format changes. */
@@ -21,8 +21,9 @@ export function saveInputs(store: KeyValueStore | null, inputs: AppInputs): void
 }
 
 /**
- * Loads the last inputs. Anything missing, unreadable, out of range or off the slider grid
- * falls back to its default, so old or tampered data can never produce an invalid state.
+ * Loads the last inputs. Anything missing, unreadable, below the minimum, above the hard maximum or with
+ * too many decimals falls back to its default, so old or tampered data can never produce an invalid state.
+ * Values above a slider's default maximum are kept (see `initialMaxes`).
  */
 export function loadInputs(store: KeyValueStore | null): AppInputs {
   let saved: Record<string, unknown> = {};
@@ -38,7 +39,7 @@ export function loadInputs(store: KeyValueStore | null): AppInputs {
   inputs.currency = isCurrencyCode(saved.currency) ? saved.currency : DEFAULT_CURRENCY;
   for (const def of PARAMS) {
     const value = saved[def.key];
-    if (isValidValue(def, value)) inputs = applyInput(inputs, def.key, value);
+    if (isAllowedValue(def, value)) inputs = applyInput(inputs, def.key, value);
   }
   return inputs;
 }

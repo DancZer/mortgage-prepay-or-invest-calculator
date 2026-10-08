@@ -1,19 +1,54 @@
 import { elapsedTime, installmentTooLow, toYearMonth, type MonthRow, type SimResult } from "./calc";
-import { formatMoney, LOCALE } from "./currency";
-import type { ParamDef } from "./params";
+import { CURRENCIES, formatMoney, LOCALE, type CurrencyCode } from "./currency";
+import type { ParamDef, TypedError } from "./params";
 import { BREAK_EVEN_MAX, BREAK_EVEN_MIN, type AppInputs, type BreakEven, type Case, type Scenarios } from "./scenarios";
 
 export const fmtMillions = (v: number) => `${(v / 1e6).toLocaleString(LOCALE, { maximumFractionDigits: 1 })} M`;
 export const fmtPct = (v: number, decimals = 1) => `${v.toFixed(decimals)} %`;
 
-/** Slider value label, e.g. "45 000 000 Ft", "6.18 %" or "50 % (75 000 Ft)". */
+/** A percentage with at least `minDecimals` and at most 2 decimals: 6.18 → "6.18", 3 → "3.0" (min 1). */
+function pctNumber(v: number, minDecimals: number): string {
+  let s = v.toFixed(2);
+  while (s.endsWith("0") && s.length - s.indexOf(".") - 1 > minDecimals) s = s.slice(0, -1);
+  return s.endsWith(".") ? s.slice(0, -1) : s;
+}
+
+/** Slider value as text, e.g. "45 000 000 Ft", "6.18 %" or "50 % (75 000 Ft)"; also read out by screen readers. */
 export function formatParam(def: ParamDef, inputs: AppInputs): string {
   const value = inputs[def.key];
   if (def.key === "prepayPct")
-    return `${fmtPct(value, 0)} (${formatMoney((inputs.extra * value) / 100, inputs.currency)})`;
+    return `${pctNumber(value, 0)} % (${formatMoney((inputs.extra * value) / 100, inputs.currency)})`;
   if (def.unit === "money") return formatMoney(value, inputs.currency);
-  if (def.unit === "percent") return fmtPct(value, def.decimals ?? 1);
+  if (def.unit === "percent") return `${pctNumber(value, def.decimals ?? 1)} %`;
   return String(value);
+}
+
+/** Text shown in an input field, without the unit: "45 000 000", "6.18", "50". */
+export function formatInputValue(def: ParamDef, value: number): string {
+  if (def.unit === "money") return value.toLocaleString(LOCALE, { maximumFractionDigits: 0 });
+  if (def.unit === "percent") return pctNumber(value, 0);
+  return String(value);
+}
+
+/** Unit shown after an input field: "Ft" / "€" / "$", "%" or "years". */
+export function unitLabel(def: ParamDef, currency: CurrencyCode): string {
+  if (def.unit === "money") return CURRENCIES[currency].label;
+  if (def.unit === "percent") return "%";
+  return "years";
+}
+
+/** Extra line under a field; the prepayment share shows the resulting monthly amount. */
+export function inputHint(def: ParamDef, inputs: AppInputs): string {
+  return def.key === "prepayPct"
+    ? `= ${formatMoney((inputs.extra * inputs.prepayPct) / 100, inputs.currency)} a month in year 1`
+    : "";
+}
+
+/** Message for a typed value that cannot be used. */
+export function describeInputError(def: ParamDef, error: TypedError, currency: CurrencyCode): string {
+  if (error.kind === "notNumber") return "Enter a number";
+  const limit = `${formatInputValue(def, error.limit)} ${unitLabel(def, currency)}`;
+  return error.kind === "belowMin" ? `Minimum is ${limit}` : `Maximum is ${limit}`;
 }
 
 /** "Year 11, month 10" (1-based) or "Not within horizon". */

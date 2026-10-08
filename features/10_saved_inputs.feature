@@ -25,16 +25,26 @@ Feature: Remembering the user's inputs
     When I open the app
     Then all parameters have their default values
 
-  Scenario: A value outside its slider's range falls back to its default, the others are kept
-    Given the saved data is '{"loan": 999999999999, "years": 20}'
+  Scenario: A value above the highest allowed value falls back to its default, the others are kept
+    Given the saved data is '{"loan": 2000000000000, "years": 20}'
     When I open the app
     Then the loan amount is set to 45 000 000
     And the years is set to 20
 
-  Scenario: A value that is not on the slider's grid falls back to its default
+  Scenario: A value below the slider minimum falls back to its default
+    Given the saved data is '{"loan": 5000000}'
+    When I open the app
+    Then the loan amount is set to 45 000 000
+
+  Scenario: A value with more decimals than allowed falls back to its default
     Given the saved data is '{"years": 20.5}'
     When I open the app
     Then the years is set to 25
+
+  Scenario: A typed value between slider steps is restored exactly
+    Given the saved data is '{"loan": 45500000}'
+    When I open the app
+    Then the loan amount is set to 45 500 000
 
   Scenario: An unknown currency falls back to forint
     Given the saved data is '{"currency": "GBP"}'

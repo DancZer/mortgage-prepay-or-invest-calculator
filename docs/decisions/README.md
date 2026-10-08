@@ -17,3 +17,4 @@ Template: **Status**, **Context**, **Decision**, **Consequences**.
 | [0008](0008-property-value-separate-from-loan.md) | Property value is separate from the loan and grows                  |
 | [0009](0009-tool-neutral-specification.md)        | Requirements as Cucumber scenarios, tool-neutral agent instructions |
 | [0010](0010-client-side-netlify.md)               | Client-side only, inputs in localStorage, hosted on Netlify         |
+| [0011](0011-typed-inputs-extend-sliders.md)       | Typed values; values above the maximum extend the slider            |

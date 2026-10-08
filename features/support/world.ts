@@ -1,6 +1,6 @@
 import { setWorldConstructor, World, type IWorldOptions } from "@cucumber/cucumber";
 import type { SimResult } from "../../src/calc";
-import { defaultInputs } from "../../src/params";
+import { defaultInputs, defaultMaxes, type Maxes } from "../../src/params";
 import { breakEvenReturn, runScenarios, type AppInputs, type BreakEven, type Scenarios } from "../../src/scenarios";
 import type { KeyValueStore } from "../../src/storage";
 
@@ -18,6 +18,12 @@ export class MemoryStore implements KeyValueStore {
 /** State shared by the steps of one scenario. */
 export class SimWorld extends World {
   inputs: AppInputs = defaultInputs();
+  /** Current slider maximums, as in the app. */
+  maxes: Maxes = defaultMaxes();
+  /** Message shown for the last rejected typed value, if any. */
+  lastError: string | null = null;
+  /** Inputs just before the last typed value, to check that a rejected value changed nothing. */
+  inputsBeforeTyping: AppInputs | null = null;
   store = new MemoryStore();
   private cached: Scenarios | null = null;
 

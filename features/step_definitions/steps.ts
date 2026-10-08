@@ -3,13 +3,14 @@ import { readFileSync } from "node:fs";
 import { Given, Then, When, type DataTable } from "@cucumber/cucumber";
 import type { MonthRow, SimResult } from "../../src/calc";
 import { formatMoney, isCurrencyCode } from "../../src/currency";
-import { applyInput, defaultInputs, paramDef, PARAMS } from "../../src/params";
+import { applyInput, applyTypedValue, defaultInputs, initialMaxes, paramDef, PARAMS } from "../../src/params";
 import { breakEvenReturn, runScenarios, type Case } from "../../src/scenarios";
 import { loadInputs, saveInputs, STORAGE_KEY } from "../../src/storage";
 import {
   chartSeries,
   describeBreakEven,
   describeElapsed,
+  describeInputError,
   describePayoff,
   formatParam,
   payoffMarker,
@@ -112,6 +113,38 @@ Given("the saved data is {string}", function (this: SimWorld, raw: string) {
 
 When("I open the app", function (this: SimWorld) {
   this.setInputs(loadInputs(this.store));
+  this.maxes = initialMaxes(this.inputs);
+});
+
+// ---------- Typed values ----------
+
+When(/^I type "(.*)" into the (.+) field$/, function (this: SimWorld, text: string, name: string) {
+  const key = paramKey(name);
+  this.inputsBeforeTyping = this.inputs;
+  const result = applyTypedValue(this.inputs, this.maxes, key, text);
+  if (result.ok) {
+    this.setInputs(result.inputs);
+    this.maxes = result.maxes;
+    this.lastError = null;
+  } else {
+    this.lastError = describeInputError(paramDef(key), result.error, this.inputs.currency);
+  }
+});
+
+Then(/^the (.+) slider goes up to (.+)$/, function (this: SimWorld, name: string, value: string) {
+  assertAmount(this.maxes[paramKey(name)], value, `${name} slider maximum`);
+});
+
+Then("the input is rejected with {string}", function (this: SimWorld, message: string) {
+  assert.equal(this.lastError === null ? null : normalize(this.lastError), normalize(message));
+});
+
+Then("no parameter has changed", function (this: SimWorld) {
+  assert.deepEqual(this.inputs, this.inputsBeforeTyping);
+});
+
+Then("the typed value is accepted", function (this: SimWorld) {
+  assert.equal(this.lastError, null);
 });
 
 Then("all parameters have their default values", function (this: SimWorld) {

@@ -11,18 +11,22 @@ import {
 } from "chart.js";
 import { toYearMonth } from "./calc";
 import { CURRENCIES, formatMoney, type CurrencyCode } from "./currency";
-import { applyInput, PARAMS, type NumericKey } from "./params";
+import { applyInput, applyTypedValue, initialMaxes, PARAMS, type Maxes, type NumericKey } from "./params";
 import { breakEvenReturn, runScenarios, type AppInputs, type Case, type Scenarios } from "./scenarios";
 import { browserStore, loadInputs, saveInputs } from "./storage";
 import {
   chartSeries,
+  describeInputError,
   DISCLAIMER,
   fmtMillions,
+  formatInputValue,
   formatParam,
+  inputHint,
   payoffMarker,
   PRIVACY_NOTE,
   SERIES,
   summaryCards,
+  unitLabel,
   verdict,
   warningMessage,
   yearlyTable,
@@ -32,6 +36,8 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, 
 
 const store = browserStore();
 let inputs: AppInputs = loadInputs(store);
+/** Current slider maximums; typing a larger value extends them (decision 0011). */
+let maxes: Maxes = initialMaxes(inputs);
 let tableCase: Case = "worst";
 
 const $ = <T extends HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
@@ -95,32 +101,80 @@ segmented(
   },
 );
 
-const sliderEls = new Map<NumericKey, { input: HTMLInputElement; output: HTMLOutputElement }>();
+interface SliderEls {
+  range: HTMLInputElement;
+  field: HTMLInputElement;
+  unit: HTMLElement;
+  hint: HTMLElement;
+  error: HTMLElement;
+}
+const sliderEls = new Map<NumericKey, SliderEls>();
+
+function showError(els: SliderEls, message: string | null) {
+  els.error.hidden = message === null;
+  els.error.textContent = message ?? "";
+  els.field.classList.toggle("invalid", message !== null);
+  els.field.setAttribute("aria-invalid", String(message !== null));
+}
 
 for (const def of PARAMS) {
-  const row = document.createElement("label");
+  const id = `field-${def.key}`;
+  const row = document.createElement("div");
   row.className = "slider";
   row.innerHTML = `
-    <span class="slider-label">${def.label}</span>
-    <output></output>
-    <input type="range" min="${def.min}" max="${def.max}" step="${def.step}" />`;
-  const input = row.querySelector("input")!;
-  const output = row.querySelector("output")!;
-  sliderEls.set(def.key, { input, output });
-  input.addEventListener("input", () => {
-    inputs = applyInput(inputs, def.key, Number(input.value));
+    <label class="slider-label" for="${id}">${def.label}</label>
+    <span class="field">
+      <input id="${id}" class="num" type="text" inputmode="decimal" autocomplete="off" aria-describedby="${id}-error" />
+      <span class="unit"></span>
+    </span>
+    <input class="range" type="range" min="${def.min}" step="${def.step}" aria-label="${def.label}" />
+    <small class="hint"></small>
+    <small class="error" id="${id}-error" role="alert" hidden></small>`;
+  const els: SliderEls = {
+    range: row.querySelector(".range")!,
+    field: row.querySelector(".num")!,
+    unit: row.querySelector(".unit")!,
+    hint: row.querySelector(".hint")!,
+    error: row.querySelector(".error")!,
+  };
+  sliderEls.set(def.key, els);
+
+  els.range.addEventListener("input", () => {
+    inputs = applyInput(inputs, def.key, Number(els.range.value));
     syncSliders();
     update();
+  });
+  // Typed values apply on Enter or when the field loses focus.
+  els.field.addEventListener("change", () => {
+    const result = applyTypedValue(inputs, maxes, def.key, els.field.value);
+    if (!result.ok) {
+      showError(els, describeInputError(def, result.error, inputs.currency));
+      return;
+    }
+    inputs = result.inputs;
+    maxes = result.maxes;
+    syncSliders();
+    update();
+  });
+  els.field.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") syncSliders();
   });
   controlsEl.append(row);
 }
 
-/** Reflects `inputs` back into the sliders (needed when one change moves another, or on load). */
+/** Reflects `inputs` and slider maximums into all controls (after any change, and on load). */
 function syncSliders() {
   for (const def of PARAMS) {
-    const { input, output } = sliderEls.get(def.key)!;
-    if (Number(input.value) !== inputs[def.key]) input.value = String(inputs[def.key]);
-    output.textContent = formatParam(def, inputs);
+    const els = sliderEls.get(def.key)!;
+    const value = inputs[def.key];
+    els.range.max = String(maxes[def.key]);
+    els.range.value = String(value);
+    els.range.setAttribute("aria-valuetext", formatParam(def, inputs));
+    els.field.value = formatInputValue(def, value);
+    els.unit.textContent = unitLabel(def, inputs.currency);
+    els.hint.textContent = inputHint(def, inputs);
+    els.hint.hidden = els.hint.textContent === "";
+    showError(els, null);
   }
 }
 syncSliders();
