@@ -112,6 +112,8 @@ export interface CardLine {
   tone?: "a" | "b";
   /** Path and case to highlight in the chart and table while this value is hovered or focused. */
   highlight?: Highlight;
+  /** Smaller text under the value. */
+  note?: string;
 }
 
 export type PathName = "A" | "B";
@@ -207,11 +209,31 @@ export function summaryCards(a: AppInputs, sc: Scenarios, lang: Language, start:
           label: month ? `${name} (${calendarMonth(month, start, lang)})` : name,
           value: month ? describeDuration(month, lang) : describePayoff(month, lang),
           tone: path === "A" ? ("a" as const) : ("b" as const),
+          // Path A with a loan: when its investments overtake the remaining loan.
+          note: path === "A" && month !== 0 ? investmentsExceedLoanNote(sc, lang) : undefined,
         };
       }),
       notes: [],
     },
   ];
+}
+
+/**
+ * First month (1-based) in which Path A's investments exceed its remaining loan, so the loan could be
+ * repaid from them; null if that does not happen within the horizon.
+ */
+export function investmentsExceedLoanMonth(res: SimResult): number | null {
+  const row = res.rows.find((r) => r.month > 0 && r.invA > r.loanA);
+  return row ? row.month : null;
+}
+
+/** The note under Path A on the Mortgage-free card, e.g. "Investments > loan: 9 months (worst) · 8 months (best)". */
+export function investmentsExceedLoanNote(sc: Scenarios, lang: Language): string {
+  const text = (res: SimResult) => {
+    const month = investmentsExceedLoanMonth(res);
+    return month === null ? STRINGS[lang].notWithinHorizonInline : describeDuration(month, lang);
+  };
+  return STRINGS[lang].cards.investmentsExceedLoan(text(sc.worst), text(sc.best));
 }
 
 /** A plain-language summary of who wins, in both cases, and the break-even return. */

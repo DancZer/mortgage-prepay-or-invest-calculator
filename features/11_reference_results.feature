@@ -25,3 +25,4 @@ Feature: Reference results for the default parameters
       | path | time              | date         |
       | A    | 24 years 1 month  | October 2050 |
       | B    | 14 years 6 months | March 2041   |
+    And under Path A the mortgage-free card says "Investments > loan: 11 years 9 months (worst) · 9 years 9 months (best)"

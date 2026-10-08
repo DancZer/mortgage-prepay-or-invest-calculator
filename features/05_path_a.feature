@@ -125,3 +125,38 @@ Feature: Path A – pure investment
       Given the default parameters
       When I run the simulation
       Then no warning is shown
+
+  Rule: The Mortgage-free card shows when Path A's investments exceed its remaining loan
+    From that month on, Path A could repay its loan from its investments. Shown under Path A's
+    payoff time, for the worst and the best case, because it depends on the investment return.
+
+    Scenario: Investments overtake the loan earlier with a higher return
+      Worst case (0%): 50 000 a month is invested while the loan falls by 100 000 a month from
+      1 200 000. In month 8 both are 400 000 (not more), in month 9 the investments are 450 000
+      against a loan of 300 000. Best case (12%, 1% a month): by month 8 the investments are about
+      418 400, already more than the 400 000 loan.
+      Given all rates are zero
+      And the parameters:
+        | loan amount           | 1 200 000 |
+        | monthly installment   | 100 000   |
+        | monthly extra savings | 50 000    |
+        | worst-case return     | 0%        |
+        | best-case return      | 12%       |
+        | years                 | 2         |
+      When I run the simulation
+      Then Path A's investments first exceed its remaining loan in month 9 in the worst case and month 8 in the best case
+      And under Path A the mortgage-free card says "Investments > loan: 9 months (worst) · 8 months (best)"
+
+    Scenario: When it does not happen within the horizon, that is stated
+      Given the default parameters
+      And the parameters:
+        | years | 1 |
+      When I run the simulation
+      Then under Path A the mortgage-free card says "Investments > loan: not within horizon (worst) · not within horizon (best)"
+
+    Scenario: Without a loan there is nothing to overtake
+      Given the default parameters
+      And the parameters:
+        | loan amount | 0 |
+      When I run the simulation
+      Then there is nothing under Path A on the mortgage-free card

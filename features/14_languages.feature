@@ -157,6 +157,17 @@ Feature: Languages and credits
         | German    | Differenz (B − A) | +12.423.253 Ft / -38.888.517 Ft |
         | English   | Difference B − A  | +Ft 12,423,253 / -Ft 38,888,517 |
 
+    Scenario Outline: When Path A's investments exceed its loan
+      Given the default parameters
+      And the language is <language>
+      Then under Path A the mortgage-free card says "<note>"
+
+      Examples:
+        | language  | note                                                                                     |
+        | Hungarian | Befektetés > hitel: 11 év 9 hónap (legrosszabb) · 9 év 9 hónap (legjobb)                 |
+        | Slovak    | Investície > úver: 11 rokov 9 mesiacov (najhorší) · 9 rokov 9 mesiacov (najlepší)        |
+        | German    | Anlagen > Restschuld: 11 Jahre 9 Monate (ungünstig) · 9 Jahre 9 Monate (günstig)         |
+
   Rule: The credits name the author, date, GitHub profile and license
 
     Scenario Outline: Credits in every language

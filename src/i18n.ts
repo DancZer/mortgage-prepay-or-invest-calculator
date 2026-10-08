@@ -47,6 +47,8 @@ export interface Strings {
     difference: string;
     mortgageFree: string;
     worstCase: (rate: string) => string;
+    /** Under Path A on the Mortgage-free card: when its investments first exceed its remaining loan. */
+    investmentsExceedLoan: (worst: string, best: string) => string;
     bestCase: (rate: string) => string;
     /** Break-even return outside the searched range (used in descriptions of the break-even return). */
     below: (rate: string) => string;
@@ -54,6 +56,8 @@ export interface Strings {
   };
   payoffDate: (year: number, month: number) => string;
   notWithinHorizon: string;
+  /** "not within horizon" inside a sentence. */
+  notWithinHorizonInline: string;
   /** Shown instead of a payoff date when the loan amount is 0. */
   noMortgage: string;
   /** A length of time, e.g. "14 years 6 months" (months ≥ 1 in total). */
@@ -132,6 +136,7 @@ const en: Strings = {
     netB: "Path B final net wealth",
     difference: "Difference B − A",
     mortgageFree: "Mortgage-free",
+    investmentsExceedLoan: (w, b) => `Investments > loan: ${w} (worst) · ${b} (best)`,
     worstCase: (r) => `Worst case (${r})`,
     bestCase: (r) => `Best case (${r})`,
     below: (r) => `Below ${r}`,
@@ -139,6 +144,7 @@ const en: Strings = {
   },
   payoffDate: (y, m) => `Year ${y}, month ${m}`,
   notWithinHorizon: "Not within horizon",
+  notWithinHorizonInline: "not within horizon",
   noMortgage: "No mortgage",
   duration: (y, m) =>
     [y > 0 ? `${y} ${y === 1 ? "year" : "years"}` : "", m > 0 ? `${m} ${m === 1 ? "month" : "months"}` : ""]
@@ -220,7 +226,7 @@ const en: Strings = {
     difference:
       "Path B minus Path A at the end. A positive amount (green) means prepaying came out ahead, a negative amount (blue) means investing did.",
     mortgageFree:
-      "How long each path takes to repay the mortgage, and the month in which that happens if the loan starts this month.",
+      "How long each path takes to repay the mortgage, and the month in which that happens if the loan starts this month. Under Path A: when its investments first exceed the remaining loan, so the loan could be repaid from them, in the worst and the best case.",
     verdict:
       "A plain-language summary. The break-even return is the yearly investment return at which both paths end equal: above it investing wins, below it prepaying wins.",
     chart:
@@ -262,6 +268,7 @@ const hu: Strings = {
     netB: "B változat végső nettó vagyona",
     difference: "Különbség (B − A)",
     mortgageFree: "Hitelmentes",
+    investmentsExceedLoan: (w, b) => `Befektetés > hitel: ${w} (legrosszabb) · ${b} (legjobb)`,
     worstCase: (r) => `Legrosszabb eset (${r})`,
     bestCase: (r) => `Legjobb eset (${r})`,
     below: (r) => `${r} alatt`,
@@ -269,6 +276,7 @@ const hu: Strings = {
   },
   payoffDate: (y, m) => `${y}. év, ${m}. hónap`,
   notWithinHorizon: "Az időtávon belül nem",
+  notWithinHorizonInline: "az időtávon belül nem",
   noMortgage: "Nincs hitel",
   duration: (y, m) => [y > 0 ? `${y} év` : "", m > 0 ? `${m} hónap` : ""].filter(Boolean).join(" "),
   verdict: {
@@ -348,7 +356,7 @@ const hu: Strings = {
     difference:
       "A B változat mínusz az A változat az időszak végén. A pozitív összeg (zöld) azt jelenti, hogy az előtörlesztés járt jobban, a negatív (kék), hogy a befektetés.",
     mortgageFree:
-      "Mennyi idő alatt fizeti vissza a hitelt a két változat, és ez melyik hónapra esik, ha a hitel ebben a hónapban indul.",
+      "Mennyi idő alatt fizeti vissza a hitelt a két változat, és ez melyik hónapra esik, ha a hitel ebben a hónapban indul. Az A változat alatt: mikor haladja meg először a befektetés a fennálló hitelt, vagyis mikortól lehetne belőle visszafizetni, a legrosszabb és a legjobb esetben.",
     verdict:
       "Közérthető összefoglaló. A küszöbhozam az az éves befektetési hozam, amelynél a két változat egyformán végez: felette a befektetés, alatta az előtörlesztés nyer.",
     chart:
@@ -390,6 +398,7 @@ const sk: Strings = {
     netB: "Konečný čistý majetok – variant B",
     difference: "Rozdiel (B − A)",
     mortgageFree: "Bez dlhu",
+    investmentsExceedLoan: (w, b) => `Investície > úver: ${w} (najhorší) · ${b} (najlepší)`,
     worstCase: (r) => `Najhorší prípad (${r})`,
     bestCase: (r) => `Najlepší prípad (${r})`,
     below: (r) => `Pod ${r}`,
@@ -397,6 +406,7 @@ const sk: Strings = {
   },
   payoffDate: (y, m) => `${y}. rok, ${m}. mesiac`,
   notWithinHorizon: "Nie v rámci horizontu",
+  notWithinHorizonInline: "nie v rámci horizontu",
   noMortgage: "Bez hypotéky",
   duration: (y, m) => {
     // 1 rok / 2–4 roky / 5+ rokov; 1 mesiac / 2–4 mesiace / 5+ mesiacov
@@ -480,7 +490,8 @@ const sk: Strings = {
     netB: "To isté pre variant B, ktorý časťou úspor predčasne spláca hypotéku a po jej splatení investuje všetko.",
     difference:
       "Variant B mínus variant A na konci obdobia. Kladná suma (zelená) znamená, že lepšie vyšlo predčasné splácanie, záporná (modrá), že investovanie.",
-    mortgageFree: "Za aký čas každý variant splatí hypotéku a v ktorom mesiaci to bude, ak úver začína tento mesiac.",
+    mortgageFree:
+      "Za aký čas každý variant splatí hypotéku a v ktorom mesiaci to bude, ak úver začína tento mesiac. Pod variantom A: kedy investície prvýkrát prevýšia zostávajúci úver, takže by sa z nich dal splatiť, v najhoršom aj najlepšom prípade.",
     verdict:
       "Zrozumiteľné zhrnutie. Hraničný výnos je ročný výnos investícií, pri ktorom oba varianty skončia rovnako: nad ním vyhráva investovanie, pod ním predčasné splácanie.",
     chart:
@@ -522,6 +533,7 @@ const de: Strings = {
     netB: "Endvermögen Variante B",
     difference: "Differenz (B − A)",
     mortgageFree: "Schuldenfrei",
+    investmentsExceedLoan: (w, b) => `Anlagen > Restschuld: ${w} (ungünstig) · ${b} (günstig)`,
     worstCase: (r) => `Ungünstiger Fall (${r})`,
     bestCase: (r) => `Günstiger Fall (${r})`,
     below: (r) => `Unter ${r}`,
@@ -529,6 +541,7 @@ const de: Strings = {
   },
   payoffDate: (y, m) => `Jahr ${y}, Monat ${m}`,
   notWithinHorizon: "Nicht im Zeitraum",
+  notWithinHorizonInline: "nicht im Zeitraum",
   noMortgage: "Keine Hypothek",
   duration: (y, m) =>
     [y > 0 ? `${y} ${y === 1 ? "Jahr" : "Jahre"}` : "", m > 0 ? `${m} ${m === 1 ? "Monat" : "Monate"}` : ""]
@@ -612,7 +625,7 @@ const de: Strings = {
     difference:
       "Variante B minus Variante A am Ende. Ein positiver Betrag (grün) bedeutet, dass die Sondertilgung vorn liegt, ein negativer (blau), dass das Investieren vorn liegt.",
     mortgageFree:
-      "Wie lange jede Variante bis zur vollständigen Rückzahlung braucht und in welchem Monat das ist, wenn das Darlehen diesen Monat beginnt.",
+      "Wie lange jede Variante bis zur vollständigen Rückzahlung braucht und in welchem Monat das ist, wenn das Darlehen diesen Monat beginnt. Unter Variante A: wann die Anlagen die Restschuld zum ersten Mal übersteigen, sodass das Darlehen daraus getilgt werden könnte, im ungünstigen und im günstigen Fall.",
     verdict:
       "Eine verständliche Zusammenfassung. Die Break-even-Rendite ist die jährliche Rendite, bei der beide Varianten gleich enden: darüber gewinnt das Investieren, darunter die Sondertilgung.",
     chart:

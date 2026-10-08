@@ -347,7 +347,9 @@ function renderCards(sc: Scenarios) {
             `<div class="card-line"${
               l.highlight ? ` tabindex="0" data-path="${l.highlight.path}" data-scenario="${l.highlight.scenario}"` : ""
             }>${l.label ? `<small>${escapeHtml(l.label)}</small>` : ""}
-            <strong${(l.tone ?? c.tone) ? ` class="${l.tone ?? c.tone}"` : ""}>${escapeHtml(l.value)}</strong></div>`,
+            <strong${(l.tone ?? c.tone) ? ` class="${l.tone ?? c.tone}"` : ""}>${escapeHtml(l.value)}</strong>${
+              l.note ? `<small class="line-note">${escapeHtml(l.note)}</small>` : ""
+            }</div>`,
         )
         .join("")}
       ${c.notes.map((n) => `<small>${escapeHtml(n)}</small>`).join("")}

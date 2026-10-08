@@ -17,6 +17,7 @@ import {
   formatParam,
   helpText,
   highlightTargets,
+  investmentsExceedLoanMonth,
   money,
   payoffMarker,
   summaryCards,
@@ -699,4 +700,22 @@ Then(/^the "\?" button of the (.+) is announced as "(.+)"$/, function (this: Sim
 
 Then("no removed inputs are kept", function (this: SimWorld) {
   assert.deepEqual(Object.keys(this.inputs).sort(), Object.keys(defaultInputs()).sort());
+});
+
+// ---------- Investments exceeding the loan (Path A) ----------
+
+Then(
+  /^Path A's investments first exceed its remaining loan in month (\d+) in the worst case and month (\d+) in the best case$/,
+  function (this: SimWorld, worst: string, best: string) {
+    assert.equal(investmentsExceedLoanMonth(this.scenarios.worst), Number(worst), "worst case");
+    assert.equal(investmentsExceedLoanMonth(this.scenarios.best), Number(best), "best case");
+  },
+);
+
+Then("under Path A the mortgage-free card says {string}", function (this: SimWorld, note: string) {
+  assert.equal(cards(this)[3].lines[0].note, note);
+});
+
+Then("there is nothing under Path A on the mortgage-free card", function (this: SimWorld) {
+  assert.equal(cards(this)[3].lines[0].note, undefined);
 });

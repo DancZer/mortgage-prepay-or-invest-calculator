@@ -541,3 +541,9 @@ thead th.hl {
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
   pointer-events: none;
 }
+
+/* Smaller line under a card value, e.g. when Path A's investments exceed its loan. */
+.card-line .line-note {
+  margin-top: 2px;
+  line-height: 1.4;
+}
