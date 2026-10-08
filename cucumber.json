@@ -1,0 +1,9 @@
+{
+  "default": {
+    "paths": ["features/**/*.feature"],
+    "import": ["features/support/**/*.ts", "features/step_definitions/**/*.ts"],
+    "tags": "not @manual",
+    "strict": true,
+    "format": ["progress", "html:reports/cucumber-report.html"]
+  }
+}

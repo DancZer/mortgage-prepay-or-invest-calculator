@@ -28,6 +28,8 @@ npm run dev        # start dev server at http://localhost:5173
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm test` | Run unit tests (Vitest) |
+| `npm run bdd` | Run the requirement scenarios in `features/` (Cucumber); HTML report in `reports/` |
+| `npm run test:all` | Unit tests + requirement scenarios |
 | `npm run typecheck` | TypeScript check only |
 | `npm run licenses` | Fail if any dependency has a disallowed license |
 | `npm run notices` | Regenerate `THIRD_PARTY_NOTICES.md` |

@@ -10,7 +10,7 @@ line chart, summary cards and a yearly table. Will be sold commercially; source 
 - Prepayment penalty: only `prepay / (1 + penalty)` reaches principal.
 - Payoff month in Path B: money the bank doesn't need is invested (no double counting).
 - Path A does NOT redirect the installment after its own payoff (as per the original spec).
-- Currency/locale: `CURRENCY` / `LOCALE` constants in `src/main.ts` (HUF, hu-HU).
+- Currency/locale: `CURRENCY` / `LOCALE` constants in `src/view.ts` (HUF, hu-HU).
 
 ## Stack
 - TypeScript (strict), Vite, Chart.js (tree-shaken: register only the components used), Vitest.
@@ -19,7 +19,12 @@ line chart, summary cards and a yearly table. Will be sold commercially; source 
 ## Layout
 - `index.html` — page shell.
 - `src/calc.ts` — pure simulation (`simulate`, no DOM). Keep all math here and unit-test it in `src/*.test.ts`.
-- `src/main.ts` — sidebar sliders, Chart.js line chart (with payoff marker plugin), cards, table.
+- `src/params.ts` — slider definitions (defaults, ranges, steps) and `applyInput` (prepayment cap).
+- `src/view.ts` — pure display logic: cards, chart series, payoff marker, yearly table, warning, formatting.
+- `src/main.ts` — DOM/Chart.js rendering only; no logic that the requirement scenarios can't reach.
+- `features/*.feature` — the requirements as Cucumber scenarios (human-readable spec, source of truth).
+  Step definitions in `features/step_definitions/`. `@manual` scenarios are not automated;
+  `@regression` values are recorded from the model. Keep every requirement change in a feature file.
 
 ## Commands
 - `npm run dev` — dev server (port 5173; also in `.claude/launch.json` as `dev`)
@@ -32,4 +37,4 @@ line chart, summary cards and a yearly table. Will be sold commercially; source 
   Commons Clause, or "free for non-commercial use" (e.g. Highcharts, amCharts, AG Grid Enterprise, Handsontable).
   Check the license before installing; after any install run `npm run licenses` and `npm run notices`.
 - Prefer no dependency over a new dependency for small things.
-- Run `npm run typecheck` and `npm test` before committing.
+- Run `npm run typecheck` and `npm run test:all` before committing.

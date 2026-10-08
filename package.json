@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "bdd": "node --import tsx node_modules/@cucumber/cucumber/bin/cucumber.js",
+    "test:all": "npm test && npm run bdd",
     "licenses": "npm run licenses:prod && npm run licenses:dev",
     "licenses:prod": "license-checker-rseidelsohn --production --excludePrivatePackages --onlyAllow \"MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;BlueOak-1.0.0\" --summary",
     "licenses:dev": "license-checker-rseidelsohn --development --excludePrivatePackages --onlyAllow \"MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;CC0-1.0;BlueOak-1.0.0;Python-2.0;CC-BY-3.0;CC-BY-4.0;MPL-2.0\" --summary",
@@ -19,7 +21,10 @@
     "chart.js": "^4.5.1"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^13.3.0",
+    "@types/node": "^26.6.4",
     "license-checker-rseidelsohn": "^4.4.2",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.3",
     "vitest": "^5.0.3"
